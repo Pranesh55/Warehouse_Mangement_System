@@ -2,20 +2,27 @@ package purchase;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.JComboBox;
 
 import customer.AddCustomer;
 import customer.ViewCustomer;
+import model.Supplier;
 import supplier.AddSupplier;
+import model.MyTableModel;
 
 public class CreatePurchase extends javax.swing.JFrame {
 	
@@ -65,9 +72,14 @@ public class CreatePurchase extends javax.swing.JFrame {
 	
 	private JButton addBtn;
 	private JButton doneBtn;
+	private JButton deleteBtn;
+	private JButton submitBtn;
+	private JButton printBtn;
 	
 	private JComboBox fromSupplierDropDown;
 	private JComboBox productNameDropDown;
+	
+	private JTable table;
 	
 	public CreatePurchase(){
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -78,7 +90,57 @@ public class CreatePurchase extends javax.swing.JFrame {
 		initViews();
 	}
 	
+	public void setTable(String[][] suppliersList) {
+		DefaultTableModel model = new MyTableModel();
+		String[] columns = { "ID","Product Name","Quantity","Amount" };
+		model.setRowCount(0);
+		model.setDataVector(suppliersList, columns);
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+		table.setDefaultRenderer(String.class, centerRenderer);
+		table.setModel(model);
+
+		table.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseClicked(MouseEvent me) {
+
+				int row = table.getSelectedRow();
+				String[] supplier = suppliersList[row];
+				
+//				selectedSupplier = new Supplier();
+//				selectedSupplier.setSupplierDetails(Integer.valueOf(supplier[0]), supplier[1], supplier[2], supplier[3],
+//						supplier[4], supplier[5], supplier[6],"","");
+//				supplierBeingEdited =new Supplier();
+//				supplierBeingEdited.setSupplierDetails(Integer.valueOf(supplier[0]), supplier[1], supplier[2], supplier[3],
+//						supplier[4], supplier[5], supplier[6],"","");
+			}
+
+			@Override
+			public void mousePressed(MouseEvent me) {
+				// To change body of generated methods, choose Tools | Templates.
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent me) {
+				// To change body of generated methods, choose Tools | Templates.
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent me) {
+				// To change body of generated methods, choose Tools | Templates.
+			}
+
+			@Override
+			public void mouseExited(MouseEvent me) {
+				// To change body of generated methods, choose Tools | Templates.
+			}
+		});
+	}
+	
 	public void initViews() {
+		
+		
+		
 		tvViewCreatePurchaseLabel = new JLabel("Create Purchase");
 		tvViewCreatePurchaseLabel.setBounds(30, 15, 300, 54);
 		tvViewCreatePurchaseLabel.setFont(new Font("Times New Roman", 1, 36));
@@ -171,6 +233,28 @@ public class CreatePurchase extends javax.swing.JFrame {
 		inPanel2.setLayout(null);
 		inPanel2.setBounds(460,90,480,450);
 		inPanel2.setBorder(redBorder);
+		
+		table = new JTable();
+		jScrollPane1 = new javax.swing.JScrollPane();
+		table.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+		table.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+		table.setForeground(new java.awt.Color(255, 0, 0));
+		table.setModel(new javax.swing.table.DefaultTableModel(new Object[][] {
+
+		}, new String[] { "Id", "Firstname" }));
+		table.setRowHeight(30);
+		table.setBounds(10, 120, 900, 400);
+		jScrollPane1.setViewportView(table);
+		jScrollPane1.setBounds(10,20 ,460 , 370);
+		
+		
+		deleteBtn = new JButton("Delete");
+		deleteBtn.setBounds(200,400,80,30);
+		deleteBtn.setBackground(new Color(0, 255, 153));
+		
+
+		inPanel2.add(jScrollPane1);
+		inPanel2.add(deleteBtn);
 
 		
 		inPanel3=new JPanel();
@@ -225,6 +309,8 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 		add(panel1);
 		
+		String[][] test=new String[][] {{"34252525","Phone","20","12"},};
+		setTable(test);
 		
 	}
 	
