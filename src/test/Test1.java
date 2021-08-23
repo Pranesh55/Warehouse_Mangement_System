@@ -31,6 +31,7 @@ import javax.swing.table.DefaultTableModel;
 import customer.AddCustomer;
 import customer.ViewCustomer;
 import model.Supplier;
+import purchase.CreatePurchase;
 import network.SQLService;
 import network.response.QueryResponse;
 import supplier.AddSupplier;
@@ -314,6 +315,9 @@ class Test1 extends javax.swing.JFrame {
 		menuViewCustomer.addActionListener(e -> {
 			menuViewCustomerActionPerformed(e);
 		});
+		menuCreatePurchase.addActionListener(e->{
+			menuCreatePurchaseActionPerformed(e);
+		});
 	}
 
 	public void setTextFieldListener() {
@@ -386,6 +390,11 @@ class Test1 extends javax.swing.JFrame {
 
 		this.dispose();
 		new ViewCustomer().setVisible(true);
+	}
+	
+	private void menuCreatePurchaseActionPerformed(ActionEvent evt) {
+		this.dispose();
+		new CreatePurchase().setVisible(true);
 	}
 
 	public void fetchAllSuppliers() {
