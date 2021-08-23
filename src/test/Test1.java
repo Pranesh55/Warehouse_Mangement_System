@@ -4,18 +4,23 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -25,6 +30,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -34,8 +40,9 @@ import model.Supplier;
 import network.SQLService;
 import network.response.QueryResponse;
 import supplier.AddSupplier;
+import supplier.ViewSupplier;
 
-class Test1 extends javax.swing.JFrame {
+public class Test1 extends javax.swing.JFrame {
 
 	public Test1() {
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -46,7 +53,7 @@ class Test1 extends javax.swing.JFrame {
 		setTextFieldListener();
 		service = new SQLService();
 		service.getConnection();
-		fetchAllSuppliers();
+		
 
 	}
 
@@ -57,138 +64,97 @@ class Test1 extends javax.swing.JFrame {
 
 	public void initViews() {
 		setMenuBar();
-		tvViewSupplier = new JLabel("View Supplier");
-		tvViewSupplier.setBounds(564, 5, 300, 54);
-		tvViewSupplier.setFont(new Font("Times New Roman", 1, 36));
-		tvViewSupplier.setForeground(Color.RED);
-		add(tvViewSupplier);
+		tvAddProduct = new JLabel("Add Product");
+		tvAddProduct.setBounds(564, 5, 300, 54);
+		tvAddProduct.setFont(new Font("Times New Roman", 1, 36));
+		tvAddProduct.setForeground(Color.RED);
+		add(tvAddProduct);
 
 		panel1 = new JPanel();
 		panel1.setLayout(null);
-		panel1.setBounds(10, 75, 933, 585);
+		panel1.setBounds(185, 75, 997, 585);
 		Border redBorder = BorderFactory.createLineBorder(Color.red);
 		panel1.setBorder(redBorder);
 		add(panel1);
 
-		panel2 = new JPanel();
-		panel2.setLayout(null);
-		panel2.setBounds(953, 75, 400, 585);
-		panel2.setBorder(redBorder);
-		add(panel2);
-
-		nameLabel = new JLabel("Name  : ");
-		tvSearchBox = new JTextField();
-		btnSearch = new JButton("Search");
-		nameLabel.setBounds(300, 30, 80, 30);
-		nameLabel.setFont(new Font("Times New Roman", 1, 18));
-		panel1.add(nameLabel);
-
-		tvSearchBox.setBounds(390, 30, 150, 30);
-		panel1.add(tvSearchBox);
-
-		btnSearch.setBounds(416, 70, 80, 30);
-		btnSearch.setBackground(new Color(0, 255, 153));
-		btnSearch.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-		panel1.add(btnSearch);
-
-		supplierTable = new JTable();
 		jScrollPane1 = new javax.swing.JScrollPane();
-		supplierTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-		supplierTable.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-		supplierTable.setForeground(new java.awt.Color(255, 0, 0));
-		supplierTable.setModel(new javax.swing.table.DefaultTableModel(new Object[][] {
+	
 
-		}, new String[] { "Id", "Firstname" }));
-		supplierTable.setRowHeight(30);
-		supplierTable.setBounds(10, 120, 900, 400);
-		jScrollPane1.setViewportView(supplierTable);
-		jScrollPane1.setBounds(10, 120, 900, 400);
+		productNameLabel = new JLabel("Product Name : ");
+		imageLabel = new JLabel("Image : ");
+		priceLabel = new JLabel("Price : ");
+		unitLabel = new JLabel("Unit : ");
+		descriptionLabel=new JLabel("Description : ");
+		quantityLabel = new JLabel("Quantity : ");
+		productImageLabel=new JLabel();
 
-		panel1.add(jScrollPane1);
-//    panel1.add();
-//
-//		String[][] datas = new String[][] {
-//				{ "1", "Pranesh", "S", "pranesh@gmail.com", "6374861765", "karur", "19--8-2002", "19-08-2002" },
-//				{ "1", "Pranesh", "S", "pranesh@gmail.com", "6374861765", "karur", "19--8-2002", "19-08-2002" },
-//				{ "1", "Pranesh", "S", "pranesh@gmail.com", "6374861765", "karur", "19--8-2002", "19-08-2002" },
-//				{ "1", "Pranesh", "S", "pranesh@gmail.com", "6374861765", "karur", "19--8-2002", "19-08-2002" },
-//				{ "1", "Pranesh", "S", "pranesh@gmail.com", "6374861765", "karur", "19--8-2002", "19-08-2002" },
-//				{ "1", "Pranesh", "S", "pranesh@gmail.com", "6374861765", "karur", "19--8-2002", "19-08-2002" },
-//				{ "1", "Pranesh", "S", "pranesh@gmail.com", "6374861765", "karur", "19--8-2002", "19-08-2002" } };
-//		setTable(datas);
-
-		btnEdit = new JButton("Edit");
-		btnDelete = new JButton("Delete");
-		btnEdit.setBounds(350, 540, 80, 30);
-		btnEdit.setBackground(new Color(0, 255, 153));
-		btnEdit.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-		panel1.add(btnEdit);
-		btnDelete.setBounds(470, 540, 80, 30);
-		btnDelete.setBackground(new Color(0, 255, 153));
-		btnDelete.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-		panel1.add(btnDelete);
-
-		firstNameLabel = new JLabel("First Name : ");
-		lastNameLabel = new JLabel("Last Name : ");
-		emailLabel = new JLabel("Email : ");
-		mobileLabel = new JLabel("Mobile : ");
-		addressLabel = new JLabel("Address : ");
-		detailsLabel=new JLabel("Details : ");
-		remarksLabel = new JLabel("Remarks : ");
-
-		firstNameLabel.setBounds(80, 50, 90, 30);
-		firstNameLabel.setFont(new Font("Times New Roman", 1, 16));
-		lastNameLabel.setBounds(80, 120, 90, 30);
-		lastNameLabel.setFont(new Font("Times New Roman", 1, 16));
-		emailLabel.setBounds(80, 190, 90, 30);
-		emailLabel.setFont(new Font("Times New Roman", 1, 16));
-		mobileLabel.setBounds(80, 260, 90, 30);
-		mobileLabel.setFont(new Font("Times New Roman", 1, 16));
-		addressLabel.setBounds(80, 320, 90, 30);
-		addressLabel.setFont(new Font("Times New Roman", 1, 16));
-		detailsLabel.setBounds(80, 390, 90, 30);
-		detailsLabel.setFont(new Font("Times New Roman", 1, 16));
-		remarksLabel.setBounds(80, 460, 90, 30);
-		remarksLabel.setFont(new Font("Times New Roman", 1, 16));
-		panel2.add(firstNameLabel);
-		panel2.add(lastNameLabel);
-		panel2.add(emailLabel);
-		panel2.add(mobileLabel);
-		panel2.add(addressLabel);
-		panel2.add(detailsLabel);
-		panel2.add(remarksLabel);
-		
-		tvFirstName = new JTextField();
-		tvLastName = new JTextField();
-		tvEmail = new JTextField();
-		tvMobile = new JTextField();
-		tvAddress = new JTextArea();
-		tvDetails=new JTextField();
-		tvRemarks=new JTextField();
-		tvFirstName.setBounds(170, 50, 150, 30);
-		tvLastName.setBounds(170, 120, 150, 30);
-		tvEmail.setBounds(170, 190, 150, 30);
-		tvMobile.setBounds(170, 260, 150, 30);
-		Border blackBorder = BorderFactory.createLineBorder(Color.gray);
-		tvAddress.setBounds(170, 320, 150, 30);
-		tvAddress.setBorder(blackBorder);
-		tvDetails.setBounds(170, 390, 150, 30);
-		tvRemarks.setBounds(170, 460, 150, 30);
-		panel2.add(tvFirstName);
-		panel2.add(tvLastName);
-		panel2.add(tvEmail);
-		panel2.add(tvMobile);
-		panel2.add(tvAddress);
-		panel2.add(tvDetails);
-		panel2.add(tvRemarks);
-
-		btnUpdate = new JButton("Update");
-		btnUpdate.setBounds(170, 520, 80, 30);
-		btnUpdate.setBackground(new Color(0, 255, 153));
-		btnUpdate.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 		Border bevelBorder=BorderFactory.createBevelBorder(DEFAULT_CURSOR);
-		btnUpdate.setBorder(bevelBorder);
-		panel2.add(btnUpdate);
+		productNameLabel.setBounds(140, 140, 150, 30);
+		productNameLabel.setFont(new Font("Times New Roman", 1, 20));
+		imageLabel.setBounds(140, 210, 150, 30);
+		imageLabel.setFont(new Font("Times New Roman", 1, 20));
+		productImageLabel.setBounds(290, 210, 150, 150);
+		productImageLabel.setBackground(Color.WHITE);
+		productImageLabel.setBorder(redBorder);
+//		productImageLabel.setBorder(bevelBorder);
+		unitLabel.setBounds(540, 100, 150, 30);
+		unitLabel.setFont(new Font("Times New Roman", 1, 20));
+		priceLabel.setBounds(540, 170, 150, 30);
+		priceLabel.setFont(new Font("Times New Roman", 1, 20));
+		;
+		
+		descriptionLabel.setBounds(540, 240, 150, 30);
+		descriptionLabel.setFont(new Font("Times New Roman", 1, 20));
+		quantityLabel.setBounds(540, 360, 150, 30);
+		quantityLabel.setFont(new Font("Times New Roman", 1, 20));
+		panel1.add(productNameLabel);
+		panel1.add(imageLabel);
+		panel1.add(priceLabel);
+		panel1.add(unitLabel);
+		panel1.add(descriptionLabel);
+		panel1.add(quantityLabel);
+		panel1.add(productImageLabel);
+		
+		tvProductName = new JTextField();
+	
+		tvPrice = new JTextField();
+		tvDescription = new JTextArea();
+		tvQuantity=new JTextField();
+		unitComboBox=new JComboBox<String>();
+		unitComboBox.addItem("Kg");
+		tvProductName.setBounds(290, 140, 150, 30);
+		unitComboBox.setBounds(650, 100, 220, 30);;
+		tvPrice.setBounds(650, 170, 150, 30);
+		Border blackBorder = BorderFactory.createLineBorder(Color.gray);
+		tvDescription.setBounds(650, 240, 220, 80);
+		tvDescription.setBorder(blackBorder);
+		tvQuantity.setBounds(650, 360, 220, 80);
+		
+		panel1.add(tvProductName);
+	
+		panel1.add(tvPrice);
+		panel1.add(tvDescription);
+		panel1.add(tvQuantity);
+		panel1.add(unitComboBox);
+		
+		
+		btnUpload = new JButton("Upload");
+		btnUpload.setBounds(325, 390, 80, 30);
+		btnUpload.setBackground(new Color(0, 255, 153));
+		btnUpload.setFont(new Font("Times New Roman", 1, 14));
+		btnUpload.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+		
+		btnUpload.setBorder(bevelBorder);
+
+		btnAdd = new JButton("Add");
+		btnAdd.setBounds(457, 480, 100, 40);
+		btnAdd.setBackground(new Color(0, 255, 153));
+		btnAdd.setFont(new Font("Times New Roman", 1, 14));
+		btnAdd.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+		
+		btnAdd.setBorder(bevelBorder);
+		panel1.add(btnAdd);
+		panel1.add(btnUpload);
 
 	}
 
@@ -269,43 +235,100 @@ class Test1 extends javax.swing.JFrame {
 	}
 	
 	public void setButtonLister() {
-		btnEdit.addActionListener(e->{
-			 tvFirstName.setText(selectedSupplier.getFirstName());
-             tvLastName.setText(selectedSupplier.getLastName());
-             tvEmail.setText(selectedSupplier.getEmail());
-             tvMobile.setText(selectedSupplier.getMobile());
-             tvAddress.setText(selectedSupplier.getAddress());
+		btnUpload.addActionListener(e->{
+			                                        
+			        // TODO add your handling code here:
+			       chooseImage();                              
+			    
 		});
-		
-		btnDelete.addActionListener(e->{
-			if(supplierBeingEdited!=null){
-	            deleteSupplier(supplierBeingEdited);
-	        }
+		btnAdd.addActionListener(e->{
+			addProduct();
 		});
-		
-		 btnUpdate.addActionListener(e->{
-			 supplierBeingEdited.setFirstName(tvFirstName.getText());
-	         supplierBeingEdited.setEmail(tvEmail.getText());
-	          supplierBeingEdited.setMobile(tvMobile.getText());
-	          supplierBeingEdited.setAddress(tvAddress.getText()); 
-	          supplierBeingEdited.setLastName(tvLastName.getText());
-	          
-	        updateUser(supplierBeingEdited);
-		 });
+	
+//		 btnAdd.addActionListener(e->{
+//			 String firstName=tvProductName.getText();
+//		    	String lastName = tvLastName.getText();
+//		    	String email = tvEmail.getText();
+//		    	String mobile = tvPrice.getText();
+//		    	String address = tvDescription.getText();
+//		    	String details = tvQuantity.getText();
+//		    	String remarks = tvRemarks.getText();
+//		    	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+//		        LocalDateTime now = LocalDateTime.now();
+//		        String date=dtf.format(now);
+//		    	String query="INSERT INTO supplier(first_name,last_name,email,mobile,address,created_date,updated_date,details,remarks) values("+"\'"+firstName+"\'"+",\'"+lastName+"\'"+",\'"+email+"\'"+",\'"+mobile+"\'"+",\'"+address+"\'"+",\'"+date+"\'"+",\'"+date+"\'"+",\'"+details+"\'"+",\'"+remarks+"\'"+")";
+//		    	System.out.println(query);
+//		    	QueryResponse qs=service.executeUpdate(query);
+//		    	if(qs.statusCode==1) {
+//		    		JOptionPane.showMessageDialog(null, "Supplier Created SuccessFully","Info", JOptionPane.INFORMATION_MESSAGE, null);
+//		    		clearUpdateDetails();
+//		    	}else {
+//		    		JOptionPane.showMessageDialog(null, qs.message,"Error", JOptionPane.ERROR_MESSAGE, null);
+//		    	}
+//		 });
 		 
-		 btnSearch.addActionListener(e->{
-			 if(!tvSearchBox.getText().isEmpty()){
-		            searchSupplier(tvSearchBox.getText());
-		        }else{
-		            fetchAllSuppliers();
-		        }
-		             
-		 });
+		 
 	}
 
+	public void chooseImage() {
+		 JFileChooser file = new JFileChooser();
+         file.setCurrentDirectory(new File(System.getProperty("user.home")));
+         //filter the files
+         FileNameExtensionFilter filter = new FileNameExtensionFilter("*.Images", "jpg","gif","png");
+         file.addChoosableFileFilter(filter);
+         int result = file.showSaveDialog(null);
+          //if the user click on save in Jfilechooser
+         if(result == JFileChooser.APPROVE_OPTION){
+             File selectedFile = file.getSelectedFile();
+             String path = selectedFile.getAbsolutePath();
+            
+             imagePath=path;
+             imagePath=imagePath.replace('\\', '/');
+             System.out.println(imagePath);
+             
+             productImageLabel.setIcon(ResizeImage(path));
+         }
+          //if the user click on save in Jfilechooser
+
+
+         else if(result == JFileChooser.CANCEL_OPTION){
+             System.out.println("No File Select");
+   }  
+	}
+	 public ImageIcon ResizeImage(String ImagePath)
+	    {
+	        ImageIcon MyImage = new ImageIcon(ImagePath);
+	        Image img = MyImage.getImage();
+	        Image newImg = img.getScaledInstance(productImageLabel.getWidth(), productImageLabel.getHeight(), Image.SCALE_SMOOTH);
+	        ImageIcon image = new ImageIcon(newImg);
+	        return image;
+	    }
+	 
+	 public void addProduct() {
+		 String name=tvProductName.getText();
+		 String unit=(String)unitComboBox.getSelectedItem();
+		 String price =tvPrice.getText();
+		 String quantity=tvQuantity.getText();
+		 String description=tvDescription.getText();
+		 String image=imagePath;
+		 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+	        LocalDateTime now = LocalDateTime.now();
+	        String date=dtf.format(now);
+		 String query="INSERT INTO products(name,image,unit,stock,price,description,created_date,updated_date) values("+"\'"+name+"\'"+",\'"+image+"\'"+",\'"+unit+"\'"+",\'"+quantity+"\'"+",\'"+price+"\'"+",\'"+description+"\'"+",\'"+date+"\'"+",\'"+date+"\'"+")";
+		 System.out.println(query);
+		 QueryResponse q=service.executeUpdate(query);
+		 if(q.statusCode==1) {
+	    		JOptionPane.showMessageDialog(null, "Product Created SuccessFully","Info", JOptionPane.INFORMATION_MESSAGE, null);
+	    		clearUpdateDetails();
+	    	}else {
+	    		JOptionPane.showMessageDialog(null, q.message,"Error", JOptionPane.ERROR_MESSAGE, null);
+	    	}
+	 }
+	 
+	 
 	public void setMenuListener() {
-		menuAddSupplier.addActionListener(e -> {
-			menuAddSupplierActionPerformed(e);
+		menuViewSupplier.addActionListener(e -> {
+			menuViewSupplierActionPerformed(e);
 
 		});
 		menuAddCustomer.addActionListener(e -> {
@@ -314,65 +337,18 @@ class Test1 extends javax.swing.JFrame {
 		menuViewCustomer.addActionListener(e -> {
 			menuViewCustomerActionPerformed(e);
 		});
+		
 	}
 
 	public void setTextFieldListener() {
-		tvSearchBox.addActionListener(e->{
-			searchSupplier(tvSearchBox.getText());
-		});
+//		
 		
 		
 	}
-	public void setTable(String[][] suppliersList) {
-		DefaultTableModel model = new MyTableModel();
-		String[] columns = { "Id", "First Name", "Last Name", "Email", "Mobile", "Address", "Created At",
-				"Last Updated At" };
-		model.setRowCount(0);
-		model.setDataVector(suppliersList, columns);
-		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-		centerRenderer.setHorizontalAlignment(javax.swing.JLabel.CENTER);
-		supplierTable.setDefaultRenderer(String.class, centerRenderer);
-		supplierTable.setModel(model);
+	
 
-		supplierTable.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent me) {
-
-				int row = supplierTable.getSelectedRow();
-				String[] supplier = suppliersList[row];
-				
-				selectedSupplier = new Supplier();
-				selectedSupplier.setSupplierDetails(Integer.valueOf(supplier[0]), supplier[1], supplier[2], supplier[3],
-						supplier[4], supplier[5], supplier[6],"","");
-				supplierBeingEdited =new Supplier();
-				supplierBeingEdited.setSupplierDetails(Integer.valueOf(supplier[0]), supplier[1], supplier[2], supplier[3],
-						supplier[4], supplier[5], supplier[6],"","");
-			}
-
-			@Override
-			public void mousePressed(MouseEvent me) {
-				// To change body of generated methods, choose Tools | Templates.
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent me) {
-				// To change body of generated methods, choose Tools | Templates.
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent me) {
-				// To change body of generated methods, choose Tools | Templates.
-			}
-
-			@Override
-			public void mouseExited(MouseEvent me) {
-				// To change body of generated methods, choose Tools | Templates.
-			}
-		});
-	}
-
-	public void menuAddSupplierActionPerformed(ActionEvent evt) {
-		new AddSupplier().setVisible(true);
+	public void menuViewSupplierActionPerformed(ActionEvent evt) {
+		new ViewSupplier().setVisible(true);
 		dispose();
 	}
 
@@ -388,124 +364,18 @@ class Test1 extends javax.swing.JFrame {
 		new ViewCustomer().setVisible(true);
 	}
 
-	public void fetchAllSuppliers() {
-
-		String query = "Select * from supplier";
-		ResultSet rs = service.executeQuery(query);
-		ArrayList<ArrayList<String>> suppliers = new ArrayList<>();
-
-		try {
-			while (rs.next()) {
-
-				ArrayList<String> supplier = new ArrayList<>();
-//         String[] supplier=new String[8];
-				String id = String.valueOf(rs.getInt("id"));
-				supplier.add(id);
-				supplier.add(rs.getString("first_name"));
-				supplier.add(rs.getString("last_name"));
-				supplier.add(rs.getString("email"));
-				supplier.add(rs.getString("mobile"));
-				supplier.add(rs.getString("address"));
-				supplier.add(rs.getString("created_date"));
-				supplier.add(rs.getString("updated_date"));
-//				supplier.add(rs.getString("details"));
-//				supplier.add(rs.getString("remarks"));
-				suppliers.add(supplier);
-
-			}
-			String[][] mSuppliers = new String[suppliers.size()][8];
-			for (int i = 0; i < suppliers.size(); i++) {
-				for (int j = 0; j < suppliers.get(i).size(); j++) {
-					mSuppliers[i][j] = suppliers.get(i).get(j);
-				}
-			}
-
-			setTable(mSuppliers);
-		} catch (Exception e) {
-
-		}
-	}
-
-	public void searchSupplier(String name) {
-
-		String query = "SELECT * from supplier where first_name LIKE " + "\'" + name + "\'";
-		ResultSet rs = service.executeQuery(query);
-		ArrayList<ArrayList<String>> suppliers = new ArrayList<>();
-
-		try {
-			while (rs.next()) {
-
-				ArrayList<String> supplier = new ArrayList<>();
-//         String[] supplier=new String[8];
-				String id = String.valueOf(rs.getInt("id"));
-				supplier.add(id);
-				supplier.add(rs.getString("first_name"));
-				supplier.add(rs.getString("last_name"));
-				supplier.add(rs.getString("email"));
-				supplier.add(rs.getString("mobile"));
-				supplier.add(rs.getString("address"));
-				supplier.add(rs.getString("created_date"));
-				supplier.add(rs.getString("updated_date"));
-				suppliers.add(supplier);
-
-			}
-			String[][] mSuppliers = new String[suppliers.size()][8];
-			for (int i = 0; i < suppliers.size(); i++) {
-				for (int j = 0; j < suppliers.get(i).size(); j++) {
-					mSuppliers[i][j] = suppliers.get(i).get(j);
-				}
-			}
-
-			setTable(mSuppliers);
-		} catch (Exception e) {
-
-		}
-	}
 	
 	public void clearUpdateDetails() {
-		tvFirstName.setText("");
-		tvLastName.setText("");
-		tvEmail.setText("");
-		tvMobile.setText("");
-		tvAddress.setText("");
+		tvProductName.setText("");
+		tvPrice.setText("");
+		tvDescription.setText("");
+		tvQuantity.setText("");
+		
 	}
 
-	public void updateUser(Supplier supplier) {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDateTime now = LocalDateTime.now();
-		String date = dtf.format(now);
-		String query = "UPDATE supplier set " + "first_name=" + "\'" + supplier.getFirstName()+ "\'" + ",last_name=" + "\'"
-				+ supplier.getLastName() + "\'" + ",email=" + "\'" + supplier.getEmail()+ "\'" + ",mobile=" + "\'"
-				+ supplier.getMobile() + "\'" + ",address=" + "\'" + supplier.getAddress() + "\'" + ",updated_date=" + "\'" + date
-				+ "\'" + " WHERE id=" + "\'" + supplier.getId() + "\'";
-		System.out.println(query);
-		QueryResponse qs = service.executeUpdate(query);
-		if (qs.statusCode == 1) {
-			fetchAllSuppliers();
-			clearUpdateDetails();
-			JOptionPane.showMessageDialog(null, "Supplier Details Updated SuccessFully", "Info",
-					JOptionPane.INFORMATION_MESSAGE, null);
-		} else {
-			JOptionPane.showMessageDialog(null, qs.message, "Error", JOptionPane.ERROR_MESSAGE, null);
-		}
-	}
+	
 
-	public void deleteSupplier(Supplier supplier) {
-
-		String query = "DELETE from supplier where id = " + "\'" + supplierBeingEdited.getId() + "\'";
-		System.out.println(query);
-		QueryResponse qs = service.executeUpdate(query);
-		if (qs.statusCode == 1) {
-			fetchAllSuppliers();
-			supplierBeingEdited = null;
-			selectedSupplier = null;
-			JOptionPane.showMessageDialog(null, "Supplier Deleted SuccessFully", "Info",
-					JOptionPane.INFORMATION_MESSAGE, null);
-		} else {
-			JOptionPane.showMessageDialog(null, qs.message, "Error", JOptionPane.ERROR_MESSAGE, null);
-		}
-	}
-
+	
 //Menu
 	private javax.swing.JMenu menuSupplier;
 	private javax.swing.JMenu menuCustomers;
@@ -525,42 +395,35 @@ class Test1 extends javax.swing.JFrame {
 	// Panels
 
 	private JPanel panel1;
-	private JPanel panel2;
 
 //label
-	private JLabel tvViewSupplier;
+	private JLabel tvAddProduct;
 	private javax.swing.JLabel addressLabel;
-	private javax.swing.JLabel emailLabel;
-	private javax.swing.JLabel firstNameLabel;
-	private javax.swing.JLabel lastNameLabel;
-	private javax.swing.JLabel mobileLabel;;
-	private JLabel detailsLabel ;
-	private JLabel remarksLabel;
-	private JLabel nameLabel;
+	private javax.swing.JLabel priceLabel;
+	private javax.swing.JLabel productNameLabel;
+	private javax.swing.JLabel imageLabel;
+	private javax.swing.JLabel unitLabel;;
+	private JLabel descriptionLabel ;
+	private JLabel quantityLabel;
+	private javax.swing.JLabel productImageLabel;
 
 	// Textfields
-	private javax.swing.JTextArea tvAddress;
-	private javax.swing.JTextField tvEmail;
-	private javax.swing.JTextField tvFirstName;
-	private javax.swing.JTextField tvLastName;
-	private javax.swing.JTextField tvMobile;;
-	private JTextField tvSearchBox;
-	private javax.swing.JTextField tvDetails;
-	private javax.swing.JTextField tvRemarks;
+	private javax.swing.JTextArea tvDescription;
+	private javax.swing.JTextField tvProductName;
+	private javax.swing.JTextField tvPrice;
+	private javax.swing.JTextField tvQuantity;
 
 	// Buttons
-	private JButton btnSearch;
-	private JButton btnEdit;
-	private JButton btnDelete;
-	private javax.swing.JButton btnUpdate;
+	private javax.swing.JButton btnAdd;
+	private JButton btnUpload;
+	
+	//Combo box
+	private JComboBox<String> unitComboBox;
 
-	// table
-	private JTable supplierTable;
 
 	// sql
 	private SQLService service;
+	private String imagePath;
 
-	private Supplier selectedSupplier = null;
-	private Supplier supplierBeingEdited = null;
 
 }
