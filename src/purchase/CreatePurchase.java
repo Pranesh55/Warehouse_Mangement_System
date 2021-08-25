@@ -1,10 +1,16 @@
 package purchase;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
+import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 
+import javax.security.auth.kerberos.KerberosTicket;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,13 +22,18 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
+import com.mysql.jdbc.ResultSet;
+
 import javax.swing.JComboBox;
 
 import customer.AddCustomer;
 import customer.ViewCustomer;
 import model.Supplier;
+import network.SQLService;
 import supplier.AddSupplier;
 import model.MyTableModel;
+import model.Product;
 
 public class CreatePurchase extends javax.swing.JFrame {
 	
@@ -60,11 +71,11 @@ public class CreatePurchase extends javax.swing.JFrame {
 	private JPanel inPanel2;
 	private JPanel inPanel3;
 	
-	private javax.swing.JTextField unitsTextField;
+	private TextField unitsTextField;
 	private javax.swing.JTextField stocksTextField;
 	private javax.swing.JTextField amountTextField;
 	private javax.swing.JTextField amountTextField2;
-	private javax.swing.JTextField paidTextField;
+	private TextField paidTextField;
 	private javax.swing.JTextField balanceTextField;
 	
 	private javax.swing.JTextArea noteTextField;
@@ -81,13 +92,28 @@ public class CreatePurchase extends javax.swing.JFrame {
 	
 	private JTable table;
 	
+	private SQLService service;
+	
+	private HashMap<Integer,Integer> supplierIdMap;
+	private HashMap<Integer,String> supplierNamesMap;
+	private ArrayList<Product> productNamesMap;
+	private int supplierId;
+	private ArrayList<Product> productsSelected;
+	private String[][] mProductsSelected;
+	
+	private Float amount = 0f;
+	
 	public CreatePurchase(){
+		service=new SQLService();
+		service.getConnection();
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(false);
 		setLayout(null);
 		setVisible(true);
 		setMenuBar();
 		initViews();
+		setDropDownListener();
+		setBtnListeners();
 	}
 	
 	public void setTable(String[][] suppliersList) {
@@ -160,14 +186,15 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 		fromSupplierDropDown = new JComboBox();
 		fromSupplierDropDown.setBounds(150,40,120,30);
-		fromSupplierDropDown.addItem("Jon");
-		fromSupplierDropDown.addItem("Rob");
+		setSuppliersDropDown();
 		
 		
 		inPanel1=new JPanel();
 		inPanel1.setLayout(null);
-		inPanel1.setBounds(10,90,440,450);
+		inPanel1.setBounds(10,90,440,430);
 		inPanel1.setBorder(redBorder);
+		inPanel1.setEnabled(false);
+		
 		
 		productNameLabel = new JLabel("Product name:-");
 		productNameLabel.setBounds(20,50,140,30);
@@ -175,8 +202,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 		productNameDropDown = new JComboBox();
 		productNameDropDown.setBounds(130,50,150,30);
-		productNameDropDown.addItem("Jon");
-		productNameDropDown.addItem("Rob");
+		setProductsDropDown();
 		
 		productStockLabel = new JLabel("Product Stock:-");
 		productStockLabel.setBounds(20,120,140,30);
@@ -190,10 +216,10 @@ public class CreatePurchase extends javax.swing.JFrame {
 		kgLabel.setBounds(300,120,40,30);
 		
 		unitsLabel = new JLabel("Units:-");
-		unitsLabel.setBounds(20,190,140,30);
+		unitsLabel.setBounds(20,190,100,30);
 		unitsLabel.setFont(new Font("Times New Roman", 1, 16));
 		
-		unitsTextField = new JTextField();
+		unitsTextField = new TextField();
 		unitsTextField.setBounds(130,190,150,30);
 		
 		amountLabel = new JLabel("Amount:-");
@@ -231,8 +257,9 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 		inPanel2=new JPanel();
 		inPanel2.setLayout(null);
-		inPanel2.setBounds(460,90,480,450);
+		inPanel2.setBounds(460,90,480,430);
 		inPanel2.setBorder(redBorder);
+		inPanel2.setEnabled(false);
 		
 		table = new JTable();
 		jScrollPane1 = new javax.swing.JScrollPane();
@@ -241,15 +268,15 @@ public class CreatePurchase extends javax.swing.JFrame {
 		table.setForeground(new java.awt.Color(255, 0, 0));
 		table.setModel(new javax.swing.table.DefaultTableModel(new Object[][] {
 
-		}, new String[] { "Id", "Firstname" }));
+		}, new String[] { "ID", "Product Name","Quantity","Amount" }));
 		table.setRowHeight(30);
-		table.setBounds(10, 120, 900, 400);
+		table.setBounds(10, 20, 460, 340);
 		jScrollPane1.setViewportView(table);
-		jScrollPane1.setBounds(10,20 ,460 , 370);
+		jScrollPane1.setBounds(10,20 ,460 , 340);
 		
 		
 		deleteBtn = new JButton("Delete");
-		deleteBtn.setBounds(200,400,80,30);
+		deleteBtn.setBounds(200,370,80,30);
 		deleteBtn.setBackground(new Color(0, 255, 153));
 		
 
@@ -259,8 +286,9 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 		inPanel3=new JPanel();
 		inPanel3.setLayout(null);
-		inPanel3.setBounds(950,90,390,450);
+		inPanel3.setBounds(950,90,390,430);
 		inPanel3.setBorder(redBorder);
+		inPanel3.setEnabled(false);
 		
 		amountLabel2 = new JLabel("Amount:-");
 		amountLabel2.setBounds(30,50,140,30);
@@ -269,19 +297,22 @@ public class CreatePurchase extends javax.swing.JFrame {
 		amountTextField2=new JTextField();
 		amountTextField2.setBounds(170,50,150,30);
 		
+		
 		paidLabel =  new JLabel("Paid:-");
 		paidLabel.setBounds(30,120,140,30);
 		paidLabel.setFont(new Font("Times New Roman", 1, 16));
 		
-		paidTextField = new JTextField();
+		paidTextField = new TextField();
 		paidTextField.setBounds(170,120,150,30);
 		
 		balanceLabel = new JLabel("Balance:-");
 		balanceLabel.setBounds(30,190,140,30);
 		balanceLabel.setFont(new Font("Times New Roman", 1, 16));
 		
+		
 		balanceTextField = new JTextField();
 		balanceTextField.setBounds(170,190,150,30);
+		balanceTextField.setEditable(false);
 		
 		noteLabel = new JLabel("Note:-");
 		noteLabel.setBounds(30,260,140,30);
@@ -306,11 +337,27 @@ public class CreatePurchase extends javax.swing.JFrame {
 		panel1.add(inPanel1);
 		panel1.add(inPanel2);
 		panel1.add(inPanel3);
+		setEnableRec(inPanel1, false);
+		setEnableRec(inPanel2, false);
+		setEnableRec(inPanel3, false);
+//		inPanel1.setEnabled(false);
+		submitBtn=new JButton("Submit");
+		submitBtn.setBounds(575,540,80,30);
+		submitBtn.setBackground(new Color(0, 255, 153));
+		submitBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+		panel1.add(submitBtn);
 		
+		printBtn=new JButton("Print");
+		printBtn.setBounds(695,540,80,30);
+		printBtn.setBackground(new Color(0, 255, 153));
+		printBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+		panel1.add(printBtn);
 		add(panel1);
 		
-		String[][] test=new String[][] {{"34252525","Phone","20","12"},};
-		setTable(test);
+		productsSelected=new ArrayList<>();
+		
+//		String[][] test=new String[][] {{"34252525","Phone","20","12"},};
+//		setTable(test);
 		
 	}
 	
@@ -406,6 +453,182 @@ public class CreatePurchase extends javax.swing.JFrame {
 		});
 	}
 	
+	
+	public void setBtnListeners() {
+		addBtn.addActionListener(e->{
+			Product currentProduct=(Product)productNamesMap.get(productNameDropDown.getSelectedIndex()-1);
+			Product product=new Product();
+			product.setId(currentProduct.getId());
+			product.setName(currentProduct.getName());
+			product.setStock(Integer.valueOf(unitsTextField.getText()));
+			product.setPrice(Float.valueOf(amountTextField.getText()));
+			productsSelected.add(product);
+			
+			
+			String[][] products = new String[productsSelected.size()][4];
+			for (int i = 0; i < productsSelected.size(); i++) {
+				Product p=productsSelected.get(i);
+				products[i][0]=String.valueOf(p.getId());
+				products[i][1]=p.getName();
+				products[i][2]=String.valueOf(p.getStock());
+				products[i][3]=String.valueOf(p.getPrice());
+				
+				amount+=p.getPrice();
+				amountTextField2.setText(String.valueOf(amount));
+			}
+			setTable(products);
+			clearPanel1(productNameDropDown.getSelectedIndex()-1);
+			setEnableRec(inPanel2 ,true);
+
+			
+		});
+		
+		printBtn.addActionListener(e->{
+			try {
+						table.print();
+			}catch(Exception ex) {
+				ex.printStackTrace();
+			}
+		});;
+		
+		doneBtn.addActionListener(e->{
+			setEnableRec(inPanel3, true);
+			setEnableRec(inPanel1,false);
+			balanceTextField.setText(String.valueOf(amount));
+		});
+	
+		
+		unitsTextField.addTextListener(e->{
+			if(unitsTextField.getText()!="") {
+				Product currentProduct=(Product)productNamesMap.get(productNameDropDown.getSelectedIndex()-1);
+				Float amount=Integer.valueOf(unitsTextField.getText()) * Float.valueOf(currentProduct.getPrice());
+				amountTextField.setText(String.valueOf(amount));
+			}
+		});
+		
+		paidTextField.addTextListener(e->{
+			if(unitsTextField.getText()!="") {
+				Float balance=Float.valueOf(amount - Float.valueOf(paidTextField.getText()));
+				balanceTextField.setText(String.valueOf(balance));
+			}
+		});
+		
+	
+	}
+	
+	public void setDropDownListener() {
+		fromSupplierDropDown.addActionListener(e->{
+			if(fromSupplierDropDown.getSelectedIndex()!=0) {
+			supplierId=supplierIdMap.get(fromSupplierDropDown.getSelectedIndex()-1);
+			setEnableRec(inPanel1, true);
+			}else {
+				setEnableRec(inPanel1, false);
+			}
+		});
+		
+		productNameDropDown.addActionListener(e->{
+			if(productNameDropDown.getSelectedIndex()!=0) {
+			Product product=(Product)productNamesMap.get(productNameDropDown.getSelectedIndex()-1);
+			stocksTextField.setText(String.valueOf(product.getStock()));
+			kgLabel.setText(product.getUnit());
+			unitsTextField.setText("1");
+			amountTextField.setText(String.valueOf(product.getPrice()));
+			}else {
+				
+			}
+		});
+	}
+	
+	public void setSuppliersDropDown() {
+		try {
+			supplierIdMap=new HashMap<>();
+			supplierNamesMap=new HashMap<>();
+		String query="SELECT * FROM supplier";
+		java.sql.ResultSet rs=service.executeQuery(query);
+		int count=0;
+		fromSupplierDropDown.addItem("Select Supplier");
+		while(rs.next()) {
+			Integer id=rs.getInt("id");
+			Supplier supplier=new Supplier();
+			supplier.setId(id);
+			supplier.setFirstName(rs.getString("first_name"));
+			supplier.setLastName(rs.getString("last_name"));
+			supplier.setEmail(rs.getString("email"));
+			supplier.setMobile(rs.getString("mobile"));
+			supplier.setAddress(rs.getString("address"));
+			supplierIdMap.put(count, id);
+			supplierNamesMap.put(id, supplier.getFirstName()+" "+supplier.getLastName());
+			fromSupplierDropDown.addItem(supplier.getFirstName()+" "+supplier.getLastName());
+			
+			count++;
+		}
+		fromSupplierDropDown.setSelectedIndex(0);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	private void setEnableRec(Component container, boolean enable){
+	    container.setEnabled(enable);
+
+	    try {
+	        Component[] components= ((Container) container).getComponents();
+	        for (int i = 0; i < components.length; i++) {
+	            setEnableRec(components[i], enable);
+	        }
+	    } catch (ClassCastException e) {
+
+	    }
+	}
+	
+	public void setProductsDropDown() {
+		try {
+			
+			productNamesMap=new ArrayList<>();
+		String query="SELECT * FROM products";
+		java.sql.ResultSet rs=service.executeQuery(query);
+		Product p=new Product();
+		p.setId(1);
+		productNameDropDown.addItem("Add Product");
+		int count=0;
+		while(rs.next()) {
+			Integer id=rs.getInt("id");
+			Product product=new Product();
+			product.setId(id);
+			product.setName(rs.getString("name"));
+			product.setDescription(rs.getString("description"));
+			product.setUnit(rs.getString("unit"));
+			product.setStock(Integer.valueOf(rs.getString("stock")));
+			product.setPrice(Float.valueOf(rs.getString("price")));
+		
+			productNamesMap.add(product);
+			productNameDropDown.addItem(product.getName());
+			count++;
+		}
+	
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	public void clearPanel1(int position) {
+		
+		Product p=(Product)productNamesMap.get(position);
+		productNamesMap.remove(position);
+//		productNameDropDown.removeAllItems();
+//		productNameDropDown = new JComboBox();
+//		productNameDropDown.setBounds(130,50,150,30);
+//		setProductsDropDown();
+////		setProductsDropDown();
+//		productNameDropDown.removeAllItems();;
+		productNameDropDown.removeItem(p.getName());
+		productNameDropDown.setSelectedIndex(0);;
+		stocksTextField.setText(null);
+		unitsTextField.setText(null);
+		amountTextField.setText(null);
+		kgLabel.setText(null);
+	}
+	
 	public void menuAddSupplierActionPerformed(ActionEvent evt) {
 		new AddSupplier().setVisible(true);
 		dispose();
@@ -429,10 +652,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 	}
 	
 	public static void main(String[] args) {
-		java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new CreatePurchase().setVisible(true);
-            }
-        });
+		new CreatePurchase().setVisible(true);
+		
 	}
 }
