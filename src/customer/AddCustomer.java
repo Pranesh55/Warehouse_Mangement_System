@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -50,7 +52,6 @@ public class AddCustomer extends javax.swing.JFrame {
 		setTextFieldListener();
 		service = new SQLService();
 		service.getConnection();
-		
 
 	}
 
@@ -224,6 +225,7 @@ public class AddCustomer extends javax.swing.JFrame {
 	public void setButtonLister() {
 	
 		 btnAdd.addActionListener(e->{
+			 if(ValidateFields()) {
 			 String firstName=tvFirstName.getText();
 		    	String lastName = tvLastName.getText();
 		    	String email = tvEmail.getText();
@@ -243,10 +245,14 @@ public class AddCustomer extends javax.swing.JFrame {
 		    	}else {
 		    		JOptionPane.showMessageDialog(null, qs.message,"Error", JOptionPane.ERROR_MESSAGE, null);
 		    	}
-		 });
+			 }
+		 } );
+		 }
 		 
 		 
-	}
+		 
+		 
+	
 
 	public void setMenuListener() {
 		menuViewSupplier.addActionListener(e -> {
@@ -306,7 +312,6 @@ public class AddCustomer extends javax.swing.JFrame {
 	}
 	
 
-	
 
 	
 	public void clearUpdateDetails() {
@@ -318,6 +323,37 @@ public class AddCustomer extends javax.swing.JFrame {
 		tvDetails.setText("");
 		tvRemarks.setText("");
 	}
+	
+	public boolean ValidateFields() {
+
+        if(tvFirstName.getText()==null ||  tvFirstName.getText()=="" || tvFirstName.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "First name should not be empty","Error", JOptionPane.ERROR_MESSAGE, null);
+            return false;     
+        }
+    
+        String regex = "^[A-Za-z0-9+_.-]+@(.+)$";  
+        Pattern pattern = Pattern.compile(regex);  
+        Matcher matcher = pattern.matcher(tvEmail.getText());  
+        if( matcher.matches()==false)  {
+        	JOptionPane.showMessageDialog(null, "Invalid Email","Error", JOptionPane.ERROR_MESSAGE, null);
+        	return false;
+        }
+        
+        String regexMob = "^\\d{10}$";
+        Pattern patternMob = Pattern.compile(regexMob);
+        Matcher matcherMob = patternMob.matcher(tvMobile.getText());
+        if( matcherMob.matches()==false)  {
+        	JOptionPane.showMessageDialog(null, "Mobile Number should contain 10 digits","Error", JOptionPane.ERROR_MESSAGE, null);
+        	return false;
+        }
+       
+        if(tvAddress.getText()==null ||  tvAddress.getText()=="" || tvAddress.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Address should not be empty","Error", JOptionPane.ERROR_MESSAGE, null);
+            return false;     
+        }
+       
+        return true;
+	}     
 
 	
 
@@ -368,5 +404,6 @@ private JMenuItem menuAddProduct;
 	// sql
 	private SQLService service;
 
+	
 
 }

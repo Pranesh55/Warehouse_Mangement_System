@@ -15,6 +15,8 @@ import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -243,31 +245,11 @@ public class AddProduct extends javax.swing.JFrame {
 			    
 		});
 		btnAdd.addActionListener(e->{
+			if(ValidateFields()) {
 			addProduct();
+			}
 		});
 	
-//		 btnAdd.addActionListener(e->{
-//			 String firstName=tvProductName.getText();
-//		    	String lastName = tvLastName.getText();
-//		    	String email = tvEmail.getText();
-//		    	String mobile = tvPrice.getText();
-//		    	String address = tvDescription.getText();
-//		    	String details = tvQuantity.getText();
-//		    	String remarks = tvRemarks.getText();
-//		    	DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
-//		        LocalDateTime now = LocalDateTime.now();
-//		        String date=dtf.format(now);
-//		    	String query="INSERT INTO supplier(first_name,last_name,email,mobile,address,created_date,updated_date,details,remarks) values("+"\'"+firstName+"\'"+",\'"+lastName+"\'"+",\'"+email+"\'"+",\'"+mobile+"\'"+",\'"+address+"\'"+",\'"+date+"\'"+",\'"+date+"\'"+",\'"+details+"\'"+",\'"+remarks+"\'"+")";
-//		    	System.out.println(query);
-//		    	QueryResponse qs=service.executeUpdate(query);
-//		    	if(qs.statusCode==1) {
-//		    		JOptionPane.showMessageDialog(null, "Supplier Created SuccessFully","Info", JOptionPane.INFORMATION_MESSAGE, null);
-//		    		clearUpdateDetails();
-//		    	}else {
-//		    		JOptionPane.showMessageDialog(null, qs.message,"Error", JOptionPane.ERROR_MESSAGE, null);
-//		    	}
-//		 });
-		 
 		 
 	}
 
@@ -390,6 +372,31 @@ public class AddProduct extends javax.swing.JFrame {
 		
 	}
 
+	public boolean ValidateFields() {
+
+        if(tvProductName.getText()==null ||  tvProductName.getText()=="" || tvProductName.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Product name should not be empty","Error", JOptionPane.ERROR_MESSAGE, null);
+            return false;     
+        }
+    
+        String regex = "[-+]?[0-9]*\\.?[0-9]+";  
+        Pattern pattern = Pattern.compile(regex);  
+        Matcher matcher = pattern.matcher(tvPrice.getText());  
+        if( matcher.matches()==false || tvPrice.getText()==null || tvPrice.getText()=="" || tvPrice.getText().isEmpty())  {
+        	JOptionPane.showMessageDialog(null, "Price should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+        	return false;
+        }
+        
+        String regexQuantity = "[+-]?[0-9]+";  
+        Pattern patternQuantity = Pattern.compile(regexQuantity);  
+        Matcher matcherQuantity = patternQuantity.matcher(tvPrice.getText());  
+        if( matcher.matches()==false || tvQuantity.getText()==null || tvQuantity.getText()=="" || tvQuantity.getText().isEmpty())  {
+        	JOptionPane.showMessageDialog(null, "Quantity should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+        	return false;
+        }
+
+        return true;
+	}  
 	
 
 	
