@@ -3,18 +3,31 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.PrintJob;
 import java.awt.TextField;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.security.auth.kerberos.KerberosTicket;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -31,6 +44,7 @@ import customer.AddCustomer;
 import customer.ViewCustomer;
 import model.Supplier;
 import network.SQLService;
+import network.response.QueryResponse;
 import supplier.AddSupplier;
 import model.MyTableModel;
 import model.Product;
@@ -94,15 +108,24 @@ public class CreatePurchase extends javax.swing.JFrame {
 	
 	private SQLService service;
 	
+	private HashMap<Integer,Object> productsListMap=new HashMap<>();
 	private HashMap<Integer,Integer> supplierIdMap;
 	private HashMap<Integer,String> supplierNamesMap;
 	private ArrayList<Product> productNamesMap;
 	private int supplierId;
 	private ArrayList<Product> productsSelected;
 	private String[][] mProductsSelected;
+	private  String purchaseId;
+	private String date;
 	
 	private Float amount = 0f;
-	
+	Double bHeight=0.0;
+    ArrayList<String> itemName = new ArrayList<>();
+    ArrayList<String> quantity = new ArrayList<>();
+    ArrayList<String> itemPrice = new ArrayList<>();
+    ArrayList<String> subtotal = new ArrayList<>();
+    ArrayList<String> productIds=new ArrayList<>();
+    
 	public CreatePurchase(){
 		service=new SQLService();
 		service.getConnection();
@@ -462,12 +485,18 @@ public class CreatePurchase extends javax.swing.JFrame {
 			product.setName(currentProduct.getName());
 			product.setStock(Integer.valueOf(unitsTextField.getText()));
 			product.setPrice(Float.valueOf(amountTextField.getText()));
+			productIds.add(String.valueOf(product.getId()));
+			itemName.add(product.getName());
+			quantity.add(String.valueOf(product.getStock()));
+			itemPrice.add(String.valueOf(product.getPrice()));
+			subtotal.add(String.valueOf(product.getStock()*product.getPrice()));
 			productsSelected.add(product);
-			
+			amount=0f;
 			
 			String[][] products = new String[productsSelected.size()][4];
 			for (int i = 0; i < productsSelected.size(); i++) {
 				Product p=productsSelected.get(i);
+				
 				products[i][0]=String.valueOf(p.getId());
 				products[i][1]=p.getName();
 				products[i][2]=String.valueOf(p.getStock());
@@ -482,10 +511,55 @@ public class CreatePurchase extends javax.swing.JFrame {
 
 			
 		});
+		deleteBtn.addActionListener(e->{
+			int row=table.getSelectedRow();
+			Product product=productsSelected.get(row);
+			productsSelected.remove(row);
+			productIds.remove(row);
+			itemName.remove(row);
+			quantity.remove(row);
+			itemPrice.remove(row);
+			subtotal.remove(0);
+			amount-=product.getPrice();
+			amountTextField2.setText(String.valueOf(amount));
+			
+			Product p1=(Product)productsListMap.get(product.getId());
+			productNamesMap.add(p1);
+			productNameDropDown.addItem(p1.getName());
+			String[][] products = new String[productsSelected.size()][4];
+			for (int i = 0; i < productsSelected.size(); i++) {
+				Product p=productsSelected.get(i);
+				
+				products[i][0]=String.valueOf(p.getId());
+				products[i][1]=p.getName();
+				products[i][2]=String.valueOf(p.getStock());
+				products[i][3]=String.valueOf(p.getPrice());
+				
+			}
+			setTable(products);
+		});
 		
+		submitBtn.addActionListener(e->{
+			createPurchase();
+		});
 		printBtn.addActionListener(e->{
 			try {
-						table.print();
+//						printActionPerformed(e);
+				
+				 bHeight = Double.valueOf(itemName.size());
+			        //JOptionPane.showMessageDialog(rootPane, bHeight);
+			        
+			        PrinterJob pj = PrinterJob.getPrinterJob();        
+			        pj.setPrintable(new BillPrintable(purchaseId,date),getPageFormat(pj));
+			        try {
+			             pj.print();
+			             
+			          
+			        }
+			         catch (PrinterException ex) {
+			                 ex.printStackTrace();
+			        }
+			        
 			}catch(Exception ex) {
 				ex.printStackTrace();
 			}
@@ -514,6 +588,97 @@ public class CreatePurchase extends javax.swing.JFrame {
 		});
 		
 	
+	}
+	public void createPurchase() {
+		try {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
+        LocalDateTime now = LocalDateTime.now();
+        String date=dtf.format(now);
+        this.date=date;
+        
+        //create transaction
+        
+		String query="INSERT INTO purchases (supplier_id,created_date,updated_date,total_amount,paid,balance) values("+"\'"+supplierId+"\'"+",\'"+date+"\'"+",\'"+date+"\'"+",\'"+amountTextField2.getText()+"\'"+",\'"+paidTextField.getText()+"\'"+",\'"+balanceTextField.getText()+"\'"+")";
+		System.out.println(query);
+		QueryResponse qs=service.executeUpdate(query);
+		if(qs.statusCode==1) {
+			submitBtn.setEnabled(false);
+    		JOptionPane.showMessageDialog(null, "Purchase Created SuccessFully","Info", JOptionPane.INFORMATION_MESSAGE, null);
+//    		clearUpdateDetails();
+    	}else {
+    		
+    		JOptionPane.showMessageDialog(null, qs.message,"Error", JOptionPane.ERROR_MESSAGE, null);
+    		return;
+    	}
+		
+		//fetch last inserted id
+		String fetchLastInsertedId="SELECT * FROM purchases WHERE ID = (SELECT MAX(ID) FROM purchases WHERE supplier_id = "+supplierId+")";
+		java.sql.ResultSet rs1=service.executeQuery(fetchLastInsertedId);
+		String purchaseId="";
+		if(rs1.next()) {
+			purchaseId=String.valueOf(rs1.getInt("id"));
+		}
+		this.purchaseId=purchaseId;
+		
+		//insert products into the purchase
+		String insertProductsQuery="INSERT INTO purchase_products values";
+		for(int i=0;i<productIds.size();i++) {
+			String q="";
+			if(i!=productIds.size()-1) {
+			 q="("+"\'"+purchaseId+"\'"+",\'"+productIds.get(i)+"\'"+",\'"+itemPrice.get(i)+"\'"+",\'"+quantity.get(i)+"\'"+",\'"+date+"\'"+",\'"+date+"\'),";
+			insertProductsQuery+=q;
+			}else {
+				 q="("+"\'"+purchaseId+"\'"+",\'"+productIds.get(i)+"\'"+",\'"+itemPrice.get(i)+"\'"+",\'"+quantity.get(i)+"\'"+",\'"+date+"\'"+",\'"+date+"\')";
+					insertProductsQuery+=q;
+			}
+			
+		}
+		System.out.println(insertProductsQuery);
+		service.executeUpdate(insertProductsQuery);
+		
+		
+		
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	 public PageFormat getPageFormat(PrinterJob pj)
+	 {
+	     
+	     PageFormat pf = pj.defaultPage();
+	     Paper paper = pf.getPaper();    
+
+	     double bodyHeight = bHeight;  
+	     double headerHeight = 4.5;                  
+	     double footerHeight = 4.5;        
+	     double width = cm_to_pp(21); 
+	     double height = cm_to_pp(headerHeight+bodyHeight+footerHeight); 
+	     paper.setSize(width, height);
+	     paper.setImageableArea(0,10,width,height - cm_to_pp(1));  
+	             
+	     pf.setOrientation(PageFormat.PORTRAIT);  
+	     pf.setPaper(paper);    
+
+	     return pf;
+	 }
+	 protected static double cm_to_pp(double cm)
+	    {            
+		        return toPPI(cm * 0.393600787);            
+	    }
+	 
+	protected static double toPPI(double inch)
+	    {            
+		        return inch * 72d;            
+	    }
+	private void printActionPerformed(java.awt.event.ActionEvent evt) {
+	    // TODO add your handling code here:
+	    Toolkit tkp = panel1.getToolkit();
+	    PrintJob pjp = tkp.getPrintJob(this, null, null);
+	    Graphics g = pjp.getGraphics();
+	    panel1.print(g);
+	    g.dispose();
+	    pjp.end();
 	}
 	
 	public void setDropDownListener() {
@@ -600,7 +765,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 			product.setUnit(rs.getString("unit"));
 			product.setStock(Integer.valueOf(rs.getString("stock")));
 			product.setPrice(Float.valueOf(rs.getString("price")));
-		
+			productsListMap.put(id, product);
 			productNamesMap.add(product);
 			productNameDropDown.addItem(product.getName());
 			count++;
@@ -655,4 +820,87 @@ public class CreatePurchase extends javax.swing.JFrame {
 		new CreatePurchase().setVisible(true);
 		
 	}
+
+
+class BillPrintable implements Printable {
+    
+	String purchaseId;
+	String date;
+	public BillPrintable(String id,String date) {
+		purchaseId=id;
+		this.date=date;
+	}
+    
+    
+	  public int print(Graphics graphics, PageFormat pageFormat,int pageIndex) 
+	  throws PrinterException 
+	  {    
+	      
+	      int r= itemName.size();
+//	      ImageIcon icon=new ImageIcon("C:UsersccsDocumentsNetBeansProjectsvideo TestPOSInvoicesrcposinvoicemylogo.jpg"); 
+	      int result = NO_SUCH_PAGE;    
+	        if (pageIndex == 0) {                    
+	        
+	            Graphics2D g2d = (Graphics2D) graphics;                    
+	            double width = pageFormat.getImageableWidth();                               
+	            g2d.translate((int) pageFormat.getImageableX(),(int) pageFormat.getImageableY()); 
+
+
+
+	          //  FontMetrics metrics=g2d.getFontMetrics(new Font("Arial",Font.BOLD,7));
+	        
+	        try{
+	            int y=20;
+	            int yShift = 10;
+	            int headerRectHeight=40;
+	           // int headerRectHeighta=40;
+	            
+	                
+	            g2d.setFont(new Font("Monospaced",Font.PLAIN,9));
+//	            g2d.drawImage(icon.getImage(), 50, 20, 90, 30, rootPane);y+=yShift+30;
+	            g2d.drawString("-----------------------------------------------------------------",12,y);y+=yShift;
+	            g2d.drawString("                            PURCHASE                             ",18,y);y+=yShift;
+	            g2d.drawString("-----------------------------------------------------------------",12,y);y+=headerRectHeight;
+	            g2d.drawString("                                         Transaction Id: "+purchaseId,12,y);y+=yShift;
+	            g2d.drawString(" Supplier: "+supplierNamesMap.get(supplierId)+"                     Date:  "+date, 12, y);y+=30;
+	            
+	            
+	            
+
+	            g2d.drawString(" Item Id   Item Name        Price        Quantity      Amount   ",10,y);y+=yShift;
+	            g2d.drawString("-----------------------------------------------------------------",10,y);y+=20;
+	     
+	            for(int s=0; s<r; s++)
+	            {
+	            g2d.drawString(" "+productIds.get(s)+"   ",10,y);
+	            g2d.drawString(" "+itemName.get(s)+"       ",60,y);
+	            g2d.drawString(" "+itemPrice.get(s)+"       ",160,y);
+	            g2d.drawString(" "+quantity.get(s)+"       ",235,y);
+	            g2d.drawString(subtotal.get(s),310,y);y+=yShift;
+
+	            }
+	          
+	            g2d.drawString("----------------------------------------------------------------",10,y);y+=yShift;
+	            g2d.drawString("                                          Total amount: "+amountTextField2.getText()+"   ",10,y);y+=yShift;
+	           
+	            g2d.drawString("                                          Paid  : "+paidTextField.getText()+"   ",10,y);y+=yShift;
+	      
+	            g2d.drawString("                                          Balance : "+balanceTextField.getText()+"   ",10,y);y+=40;
+	  
+	            g2d.drawString("****************************************************************",10,y);y+=yShift;
+	            g2d.drawString("                           HAVE A GOOD DAY                        ",10,y);y+=yShift;
+	            g2d.drawString("****************************************************************",10,y);y+=yShift;
+	               
+	           
+
+	    }
+	    catch(Exception e){
+	    e.printStackTrace();
+	    }
+
+	              result = PAGE_EXISTS;    
+	          }    
+	          return result;    
+	      }
+	   }
 }
