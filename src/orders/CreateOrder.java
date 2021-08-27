@@ -1,4 +1,4 @@
-package purchase;
+package orders;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -47,13 +47,12 @@ import customer.ViewCustomer;
 import model.Supplier;
 import network.SQLService;
 import network.response.QueryResponse;
-import orders.CreateOrder;
+import purchase.CreatePurchase;
 import supplier.AddSupplier;
-import supplier.ViewSupplier;
 import model.MyTableModel;
 import model.Product;
 
-public class CreatePurchase extends javax.swing.JFrame {
+public class CreateOrder extends javax.swing.JFrame {
 	
 	//Menu
 	private javax.swing.JMenu menuSupplier;
@@ -72,7 +71,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 	private javax.swing.JMenuItem menuViewSupplier;
 
 	private JLabel tvViewCreatePurchaseLabel;
-	private JLabel tvViewFromFieldLabel;
+	private JLabel tvViewToLabel;
 	private JLabel productNameLabel;
 	private JLabel productStockLabel;
 	private JLabel kgLabel;
@@ -105,7 +104,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 	private JButton submitBtn;
 	private JButton printBtn;
 	
-	private JComboBox fromSupplierDropDown;
+	private JComboBox toCustomersDropDown;
 	private JComboBox productNameDropDown;
 	
 	private JTable table;
@@ -116,10 +115,10 @@ public class CreatePurchase extends javax.swing.JFrame {
 	private HashMap<Integer,Integer> supplierIdMap;
 	private HashMap<Integer,String> supplierNamesMap;
 	private ArrayList<Product> productNamesMap;
-	private int supplierId;
+	private int customerId;
 	private ArrayList<Product> productsSelected;
 	private String[][] mProductsSelected;
-	private  String purchaseId;
+	private  String orderId;
 	private String date;
 	
 	private Float amount = 0f;
@@ -130,7 +129,7 @@ public class CreatePurchase extends javax.swing.JFrame {
     ArrayList<String> subtotal = new ArrayList<>();
     ArrayList<String> productIds=new ArrayList<>();
     
-	public CreatePurchase(){
+	public CreateOrder(){
 		service=new SQLService();
 		service.getConnection();
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -194,7 +193,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 		
 		
-		tvViewCreatePurchaseLabel = new JLabel("Create Purchase");
+		tvViewCreatePurchaseLabel = new JLabel("Create Order");
 		tvViewCreatePurchaseLabel.setBounds(30, 15, 300, 54);
 		tvViewCreatePurchaseLabel.setFont(new Font("Times New Roman", 1, 36));
 		tvViewCreatePurchaseLabel.setForeground(Color.RED);
@@ -206,13 +205,13 @@ public class CreatePurchase extends javax.swing.JFrame {
 		Border redBorder = BorderFactory.createLineBorder(Color.red);
 		panel1.setBorder(redBorder);
 		
-		tvViewFromFieldLabel = new JLabel("From:-");
-		tvViewFromFieldLabel.setBounds(80, 40, 90, 30);
-		tvViewFromFieldLabel.setFont(new Font("Times New Roman", 1, 16));
+		tvViewToLabel = new JLabel("To:-");
+		tvViewToLabel.setBounds(80, 40, 90, 30);
+		tvViewToLabel.setFont(new Font("Times New Roman", 1, 16));
 
 		
-		fromSupplierDropDown = new JComboBox();
-		fromSupplierDropDown.setBounds(150,40,120,30);
+		toCustomersDropDown = new JComboBox();
+		toCustomersDropDown.setBounds(150,40,120,30);
 		setSuppliersDropDown();
 		
 		
@@ -359,8 +358,8 @@ public class CreatePurchase extends javax.swing.JFrame {
 		inPanel3.add(noteTextField);
 		
 		
-		panel1.add(tvViewFromFieldLabel);
-		panel1.add(fromSupplierDropDown);
+		panel1.add(tvViewToLabel);
+		panel1.add(toCustomersDropDown);
 		panel1.add(inPanel1);
 		panel1.add(inPanel2);
 		panel1.add(inPanel3);
@@ -478,16 +477,14 @@ public class CreatePurchase extends javax.swing.JFrame {
 		menuViewCustomer.addActionListener(e -> {
 			menuViewCustomerActionPerformed(e);
 		});
-		menuViewSupplier.addActionListener(e -> {
-			new ViewSupplier().setVisible(true);
+		menuCreatePurchase.addActionListener(e->{
+			menuCreatePurchaseActionPerformed(e);
+		});
+		menuCreatePurchase.addActionListener(e->{
+			new CreatePurchase().setVisible(true);
 			dispose();
 		});
 		
-		
-		menuCreaterOrder.addActionListener(e->{
-			new CreateOrder().setVisible(true);
-			dispose();
-		});
 	}
 	
 	
@@ -556,7 +553,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 		submitBtn.addActionListener(e->{
 			if(ValidateFields())
-			createPurchase();
+			createOrder();
 		});
 		printBtn.addActionListener(e->{
 			try {
@@ -566,7 +563,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 			        //JOptionPane.showMessageDialog(rootPane, bHeight);
 			        
 			        PrinterJob pj = PrinterJob.getPrinterJob();        
-			        pj.setPrintable(new BillPrintable(purchaseId,date),getPageFormat(pj));
+			        pj.setPrintable(new BillPrintable(orderId,date),getPageFormat(pj));
 			        try {
 			             pj.print();
 			             
@@ -606,7 +603,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 		
 	
 	}
-	public void createPurchase() {
+	public void createOrder() {
 		try {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");  
         LocalDateTime now = LocalDateTime.now();
@@ -615,13 +612,13 @@ public class CreatePurchase extends javax.swing.JFrame {
         
         //create transaction
         
-		String query="INSERT INTO purchases (supplier_id,created_date,updated_date,total_amount,paid,balance,description) values("+"\'"+supplierId+"\'"+",\'"+date+"\'"+",\'"+date+"\'"+",\'"+amountTextField2.getText()+"\'"+",\'"+paidTextField.getText()+"\'"+",\'"+balanceTextField.getText()+"\'"+",\'"+noteTextField.getText()+"\'"+")";
+		String query="INSERT INTO orders (customer_id,created_date,updated_date,total_amount,paid,balance,description) values("+"\'"+customerId+"\'"+",\'"+date+"\'"+",\'"+date+"\'"+",\'"+amountTextField2.getText()+"\'"+",\'"+paidTextField.getText()+"\'"+",\'"+balanceTextField.getText()+"\'"+",\'"+noteTextField.getText()+"\'"+")";
 		System.out.println(query);
 		QueryResponse qs=service.executeUpdate(query);
 		if(qs.statusCode==1) {
 			submitBtn.setEnabled(false);
 			printBtn.setEnabled(true);
-    		JOptionPane.showMessageDialog(null, "Purchase Created SuccessFully","Info", JOptionPane.INFORMATION_MESSAGE, null);
+    		JOptionPane.showMessageDialog(null, "Order Created SuccessFully","Info", JOptionPane.INFORMATION_MESSAGE, null);
 //    		clearUpdateDetails();
     	}else {
     		
@@ -630,23 +627,23 @@ public class CreatePurchase extends javax.swing.JFrame {
     	}
 		
 		//fetch last inserted id
-		String fetchLastInsertedId="SELECT * FROM purchases WHERE ID = (SELECT MAX(ID) FROM purchases WHERE supplier_id = "+supplierId+")";
+		String fetchLastInsertedId="SELECT * FROM orders WHERE ID = (SELECT MAX(ID) FROM orders WHERE customer_id = "+customerId+")";
 		java.sql.ResultSet rs1=service.executeQuery(fetchLastInsertedId);
-		String purchaseId="";
+		String orderId="";
 		if(rs1.next()) {
-			purchaseId=String.valueOf(rs1.getInt("id"));
+			orderId=String.valueOf(rs1.getInt("id"));
 		}
-		this.purchaseId=purchaseId;
+		this.orderId=orderId;
 		
 		//insert products into the purchase
-		String insertProductsQuery="INSERT INTO purchase_products values";
+		String insertProductsQuery="INSERT INTO order_products values";
 		for(int i=0;i<productIds.size();i++) {
 			String q="";
 			if(i!=productIds.size()-1) {
-			 q="("+"\'"+purchaseId+"\'"+",\'"+productIds.get(i)+"\'"+",\'"+itemPrice.get(i)+"\'"+",\'"+quantity.get(i)+"\'"+",\'"+date+"\'"+",\'"+date+"\'),";
+			 q="("+"\'"+orderId+"\'"+",\'"+productIds.get(i)+"\'"+",\'"+itemPrice.get(i)+"\'"+",\'"+quantity.get(i)+"\'"+",\'"+date+"\'"+",\'"+date+"\'),";
 			insertProductsQuery+=q;
 			}else {
-				 q="("+"\'"+purchaseId+"\'"+",\'"+productIds.get(i)+"\'"+",\'"+itemPrice.get(i)+"\'"+",\'"+quantity.get(i)+"\'"+",\'"+date+"\'"+",\'"+date+"\')";
+				 q="("+"\'"+orderId+"\'"+",\'"+productIds.get(i)+"\'"+",\'"+itemPrice.get(i)+"\'"+",\'"+quantity.get(i)+"\'"+",\'"+date+"\'"+",\'"+date+"\')";
 					insertProductsQuery+=q;
 			}
 			
@@ -700,9 +697,9 @@ public class CreatePurchase extends javax.swing.JFrame {
 	}
 	
 	public void setDropDownListener() {
-		fromSupplierDropDown.addActionListener(e->{
-			if(fromSupplierDropDown.getSelectedIndex()!=0) {
-			supplierId=supplierIdMap.get(fromSupplierDropDown.getSelectedIndex()-1);
+		toCustomersDropDown.addActionListener(e->{
+			if(toCustomersDropDown.getSelectedIndex()!=0) {
+			customerId=supplierIdMap.get(toCustomersDropDown.getSelectedIndex()-1);
 			setEnableRec(inPanel1, true);
 			}else {
 				setEnableRec(inPanel1, false);
@@ -726,10 +723,10 @@ public class CreatePurchase extends javax.swing.JFrame {
 		try {
 			supplierIdMap=new HashMap<>();
 			supplierNamesMap=new HashMap<>();
-		String query="SELECT * FROM supplier";
+		String query="SELECT * FROM customers";
 		java.sql.ResultSet rs=service.executeQuery(query);
 		int count=0;
-		fromSupplierDropDown.addItem("Select Supplier");
+		toCustomersDropDown.addItem("Select Customer");
 		while(rs.next()) {
 			Integer id=rs.getInt("id");
 			Supplier supplier=new Supplier();
@@ -741,11 +738,11 @@ public class CreatePurchase extends javax.swing.JFrame {
 			supplier.setAddress(rs.getString("address"));
 			supplierIdMap.put(count, id);
 			supplierNamesMap.put(id, supplier.getFirstName()+" "+supplier.getLastName());
-			fromSupplierDropDown.addItem(supplier.getFirstName()+" "+supplier.getLastName());
+			toCustomersDropDown.addItem(supplier.getFirstName()+" "+supplier.getLastName());
 			
 			count++;
 		}
-		fromSupplierDropDown.setSelectedIndex(0);
+		toCustomersDropDown.setSelectedIndex(0);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -881,7 +878,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 	}
 	
 	public static void main(String[] args) {
-		new CreatePurchase().setVisible(true);
+		new CreateOrder().setVisible(true);
 		
 	}
 
@@ -923,10 +920,10 @@ class BillPrintable implements Printable {
 	            g2d.setFont(new Font("Monospaced",Font.PLAIN,9));
 //	            g2d.drawImage(icon.getImage(), 50, 20, 90, 30, rootPane);y+=yShift+30;
 	            g2d.drawString("-----------------------------------------------------------------",12,y);y+=yShift;
-	            g2d.drawString("                            PURCHASE                             ",18,y);y+=yShift;
+	            g2d.drawString("                            Order                            ",18,y);y+=yShift;
 	            g2d.drawString("-----------------------------------------------------------------",12,y);y+=headerRectHeight;
-	            g2d.drawString("                                         Transaction Id: "+purchaseId,12,y);y+=yShift;
-	            g2d.drawString(" Supplier: "+supplierNamesMap.get(supplierId)+"                     Date:  "+date, 12, y);y+=30;
+	            g2d.drawString("                                         Order Id: "+purchaseId,12,y);y+=yShift;
+	            g2d.drawString(" Customer: "+supplierNamesMap.get(customerId)+"                     Date:  "+date, 12, y);y+=30;
 	            
 	            
 	            

@@ -51,7 +51,9 @@ import customer.ViewCustomer;
 import model.Supplier;
 import network.SQLService;
 import network.response.QueryResponse;
+import orders.CreateOrder;
 import products.AddProduct;
+import purchase.CreatePurchase;
 import supplier.AddSupplier;
 import supplier.ViewSupplier;
 import model.MyTableModel;
@@ -59,6 +61,11 @@ import model.Product;
 
 public class ViewStocks extends JFrame{
 
+	
+
+
+
+	
 
 		public ViewStocks() {
 			setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -349,6 +356,14 @@ public class ViewStocks extends JFrame{
 			menuAddProduct.addActionListener(e->{
 				menuAddProductsActionPerformed(e);
 			});
+			menuCreatePurchase.addActionListener(e->{
+				new CreatePurchase().setVisible(true);
+				dispose();
+			});
+			menuCreaterOrder.addActionListener(e->{
+				new CreateOrder().setVisible(true);
+				dispose();
+			});
 		}
 
 
@@ -574,6 +589,31 @@ public class ViewStocks extends JFrame{
 			productImage.setIcon(null);
 		}
 
+public boolean ValidateFields() {
+			
+			if(tvProductName.getText()==null ||  tvProductName.getText()=="" || tvProductName.getText().isEmpty()) {
+	            JOptionPane.showMessageDialog(null, "Name should not be empty","Error", JOptionPane.ERROR_MESSAGE, null);
+	            return false;     
+	        }
+		    
+			String regex = "[-+]?[0-9]*\\.?[0-9]+";  
+	        Pattern pattern = Pattern.compile(regex);  
+	        Matcher matcher = pattern.matcher(tvPrice.getText());  
+	        if( matcher.matches()==false || tvPrice.getText()==null || tvPrice.getText()=="" || tvPrice.getText().isEmpty())  {
+	        	JOptionPane.showMessageDialog(null, "Price should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+	        	return false;
+	        }
+	        
+	        String regexQuantity = "[+-]?[0-9]+";  
+	        Pattern patternQuantity = Pattern.compile(regexQuantity);  
+	        Matcher matcherQuantity = patternQuantity.matcher(tvUnit.getText());  
+	        if( matcher.matches()==false || tvUnit.getText()==null || tvUnit.getText()=="" || tvUnit.getText().isEmpty())  {
+	        	JOptionPane.showMessageDialog(null, "Unit should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+	        	return false;
+	        }
+
+	        return true;
+		}  
 		public void updateProduct(Product product) {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 			LocalDateTime now = LocalDateTime.now();
@@ -641,36 +681,7 @@ public class ViewStocks extends JFrame{
 				JOptionPane.showMessageDialog(null, qs.message, "Error", JOptionPane.ERROR_MESSAGE, null);
 			}
 		}
-		
-		public boolean ValidateFields() {
-			
-			if(tvProductName.getText()==null ||  tvProductName.getText()=="" || tvProductName.getText().isEmpty()) {
-	            JOptionPane.showMessageDialog(null, "Name should not be empty","Error", JOptionPane.ERROR_MESSAGE, null);
-	            return false;     
-	        }
-		    
-			String regex = "[-+]?[0-9]*\\.?[0-9]+";  
-	        Pattern pattern = Pattern.compile(regex);  
-	        Matcher matcher = pattern.matcher(tvPrice.getText());  
-	        if( matcher.matches()==false || tvPrice.getText()==null || tvPrice.getText()=="" || tvPrice.getText().isEmpty())  {
-	        	JOptionPane.showMessageDialog(null, "Price should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
-	        	return false;
-	        }
-	        
-	        String regexQuantity = "[+-]?[0-9]+";  
-	        Pattern patternQuantity = Pattern.compile(regexQuantity);  
-	        Matcher matcherQuantity = patternQuantity.matcher(tvUnit.getText());  
-	        if( matcher.matches()==false || tvUnit.getText()==null || tvUnit.getText()=="" || tvUnit.getText().isEmpty())  {
-	        	JOptionPane.showMessageDialog(null, "Unit should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
-	        	return false;
-	        }
 
-	        return true;
-		}  
-		
-
-		
-		
 	//Menu
 		private javax.swing.JMenu menuSupplier;
 		private javax.swing.JMenu menuCustomers;

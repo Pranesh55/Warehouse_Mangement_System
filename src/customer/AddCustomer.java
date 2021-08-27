@@ -36,7 +36,9 @@ import customer.ViewCustomer;
 import model.Supplier;
 import network.SQLService;
 import network.response.QueryResponse;
+import orders.CreateOrder;
 import products.AddProduct;
+import purchase.CreatePurchase;
 import supplier.AddSupplier;
 import supplier.ViewSupplier;
 import view.ViewStocks;
@@ -270,6 +272,14 @@ public class AddCustomer extends javax.swing.JFrame {
 		});
 		menuStocks.addActionListener(e->{
 			menuViewStocksActionPerformed(e);
+		});
+		menuCreatePurchase.addActionListener(e->{
+			new CreatePurchase().setVisible(true);
+			dispose();
+		});
+		menuCreaterOrder.addActionListener(e->{
+			new CreateOrder().setVisible(true);
+			dispose();
 		});
 	}
 
