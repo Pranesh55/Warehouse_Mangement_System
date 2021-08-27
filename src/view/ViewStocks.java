@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -57,11 +59,6 @@ import model.Product;
 
 public class ViewStocks extends JFrame{
 
-	
-
-
-
-	
 
 		public ViewStocks() {
 			setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -311,6 +308,7 @@ public class ViewStocks extends JFrame{
 			});
 			
 			 btnUpdate.addActionListener(e->{
+				 if(ValidateFields()) {
 				 productBeingEdited.setName(tvProductName.getText());
 		         productBeingEdited.setDescription(tvDescription.getText());
 		          productBeingEdited.setUnit(tvUnit.getText());
@@ -318,6 +316,7 @@ public class ViewStocks extends JFrame{
 		          productBeingEdited.setStock(Integer.valueOf(tvStock.getText()));
 		          productBeingEdited.setPrice(Float.valueOf(tvPrice.getText()));
 		        updateProduct(productBeingEdited);
+				 }
 			 });
 			 
 			 btnSearch.addActionListener(e->{
@@ -642,7 +641,36 @@ public class ViewStocks extends JFrame{
 				JOptionPane.showMessageDialog(null, qs.message, "Error", JOptionPane.ERROR_MESSAGE, null);
 			}
 		}
+		
+		public boolean ValidateFields() {
+			
+			if(tvProductName.getText()==null ||  tvProductName.getText()=="" || tvProductName.getText().isEmpty()) {
+	            JOptionPane.showMessageDialog(null, "Name should not be empty","Error", JOptionPane.ERROR_MESSAGE, null);
+	            return false;     
+	        }
+		    
+			String regex = "[-+]?[0-9]*\\.?[0-9]+";  
+	        Pattern pattern = Pattern.compile(regex);  
+	        Matcher matcher = pattern.matcher(tvPrice.getText());  
+	        if( matcher.matches()==false || tvPrice.getText()==null || tvPrice.getText()=="" || tvPrice.getText().isEmpty())  {
+	        	JOptionPane.showMessageDialog(null, "Price should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+	        	return false;
+	        }
+	        
+	        String regexQuantity = "[+-]?[0-9]+";  
+	        Pattern patternQuantity = Pattern.compile(regexQuantity);  
+	        Matcher matcherQuantity = patternQuantity.matcher(tvUnit.getText());  
+	        if( matcher.matches()==false || tvUnit.getText()==null || tvUnit.getText()=="" || tvUnit.getText().isEmpty())  {
+	        	JOptionPane.showMessageDialog(null, "Unit should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+	        	return false;
+	        }
 
+	        return true;
+		}  
+		
+
+		
+		
 	//Menu
 		private javax.swing.JMenu menuSupplier;
 		private javax.swing.JMenu menuCustomers;

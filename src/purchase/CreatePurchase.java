@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.security.auth.kerberos.KerberosTicket;
 import javax.swing.BorderFactory;
@@ -478,6 +480,8 @@ public class CreatePurchase extends javax.swing.JFrame {
 	
 	
 	public void setBtnListeners() {
+		if(ValidateFields())
+		{
 		addBtn.addActionListener(e->{
 			Product currentProduct=(Product)productNamesMap.get(productNameDropDown.getSelectedIndex()-1);
 			Product product=new Product();
@@ -509,8 +513,9 @@ public class CreatePurchase extends javax.swing.JFrame {
 			clearPanel1(productNameDropDown.getSelectedIndex()-1);
 			setEnableRec(inPanel2 ,true);
 
-			
+		
 		});
+		}
 		deleteBtn.addActionListener(e->{
 			int row=table.getSelectedRow();
 			Product product=productsSelected.get(row);
@@ -540,7 +545,9 @@ public class CreatePurchase extends javax.swing.JFrame {
 		});
 		
 		submitBtn.addActionListener(e->{
+			if(ValidateFields()) {
 			createPurchase();
+			}
 		});
 		printBtn.addActionListener(e->{
 			try {
@@ -642,6 +649,8 @@ public class CreatePurchase extends javax.swing.JFrame {
 			e.printStackTrace();
 		}
 	}
+	
+
 	
 	 public PageFormat getPageFormat(PrinterJob pj)
 	 {
@@ -820,6 +829,29 @@ public class CreatePurchase extends javax.swing.JFrame {
 		new CreatePurchase().setVisible(true);
 		
 	}
+	
+	public boolean ValidateFields() {
+
+    
+        String regex = "[-+]?[0-9]*\\.?[0-9]+";  
+        Pattern pattern = Pattern.compile(regex);  
+        Matcher matcher = pattern.matcher(amountTextField.getText());  
+        if( matcher.matches()==false || amountTextField.getText()==null || amountTextField.getText()=="" || amountTextField.getText().isEmpty())  {
+        	JOptionPane.showMessageDialog(null, "Amount should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+        	return false;
+        }
+        
+        String regexQuantity = "[-+]?[0-9]*\\.?[0-9]+";  
+        Pattern patternQuantity = Pattern.compile(regexQuantity);  
+        Matcher matcherQuantity = patternQuantity.matcher(paidTextField.getText());  
+        if( matcher.matches()==false || paidTextField.getText()==null || paidTextField.getText()=="" || paidTextField.getText().isEmpty())  {
+        	JOptionPane.showMessageDialog(null, "Paid should be a numerical value","Error", JOptionPane.ERROR_MESSAGE, null);
+        	return false;
+        }
+
+        return true;
+	}  
+	
 
 
 class BillPrintable implements Printable {
