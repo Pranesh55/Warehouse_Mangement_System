@@ -56,6 +56,7 @@ import products.AddProduct;
 import purchase.CreatePurchase;
 import supplier.AddSupplier;
 import supplier.ViewSupplier;
+import model.Constants;
 import model.MyTableModel;
 import model.Product;
 
@@ -67,7 +68,8 @@ public class ViewStocks extends JFrame{
 
 	
 
-		public ViewStocks() {
+		public ViewStocks(String loginType) {
+			userType=loginType;
 			setExtendedState(JFrame.MAXIMIZED_BOTH);
 			setUndecorated(false);
 			setLayout(null);
@@ -81,7 +83,7 @@ public class ViewStocks extends JFrame{
 		}
 
 		public static void main(String[] args) {
-			new ViewStocks().setVisible(true);
+			new ViewStocks(userType).setVisible(true);
 
 		}
 
@@ -252,31 +254,31 @@ public class ViewStocks extends JFrame{
 			menuProduct.setText("Product");
 			menuAddProduct.setText("Add Product");
 			menuProduct.add(menuAddProduct);
-			menuBar.add(menuProduct);
+//			menuBar.add(menuProduct);
 
 			menuSupplier.setForeground(new java.awt.Color(255, 255, 255));
 			menuSupplier.setText("Suppliers");
 
 			menuAddSupplier.setText("Add Supplier");
 
-			menuSupplier.add(menuAddSupplier);
+//			menuSupplier.add(menuAddSupplier);
 
 			menuViewSupplier.setText("View Supplier");
-			menuSupplier.add(menuViewSupplier);
+//			menuSupplier.add(menuViewSupplier);
 
-			menuBar.add(menuSupplier);
+//			menuBar.add(menuSupplier);
 
 			menuCustomers.setForeground(new java.awt.Color(255, 255, 255));
 			menuCustomers.setText("Customers");
 
 			menuAddCustomer.setText("Add Customer");
-			menuCustomers.add(menuAddCustomer);
+//			menuCustomers.add(menuAddCustomer);
 
 			menuViewCustomer.setText("View Customer");
 
-			menuCustomers.add(menuViewCustomer);
+//			menuCustomers.add(menuViewCustomer);
 
-			menuBar.add(menuCustomers);
+//			menuBar.add(menuCustomers);
 
 			menuTransactions.setForeground(new java.awt.Color(255, 255, 255));
 			menuTransactions.setText("New Purchase/Order");
@@ -287,7 +289,7 @@ public class ViewStocks extends JFrame{
 			menuCreaterOrder.setText("Create Order");
 			menuTransactions.add(menuCreaterOrder);
 
-			menuBar.add(menuTransactions);
+//			menuBar.add(menuTransactions);
 
 			menuView.setForeground(new java.awt.Color(255, 255, 255));
 			menuView.setText("View");
@@ -295,12 +297,38 @@ public class ViewStocks extends JFrame{
 			menuStocks.setText("Stocks");
 			menuView.add(menuStocks);
 
-			menuBar.add(menuView);
+//			menuBar.add(menuView);
 
 			setJMenuBar(menuBar);
 
+			setMenuItems();
 			setMenuListener();
 
+		}
+		public void setMenuItems() {
+			if(userType==Constants.ADMIN) {
+				menuBar.add(menuProduct);
+				
+				menuSupplier.add(menuAddSupplier);
+				menuSupplier.add(menuViewSupplier);
+				
+				menuCustomers.add(menuAddCustomer);
+				menuCustomers.add(menuViewCustomer);
+				menuBar.add(menuSupplier);
+				menuBar.add(menuCustomers);
+				menuBar.add(menuTransactions);
+				menuBar.add(menuView);
+			}else if(userType==Constants.WAREHOUSE) {
+				menuSupplier.add(menuViewSupplier);
+				menuCustomers.add(menuViewCustomer);
+				menuBar.add(menuSupplier);
+				menuBar.add(menuCustomers);
+				menuBar.add(menuTransactions);
+				menuBar.add(menuView);
+			}else {
+				menuBar.add(menuTransactions);
+				menuBar.add(menuView);
+			}
 		}
 		
 		public void setButtonLister() {
@@ -357,11 +385,11 @@ public class ViewStocks extends JFrame{
 				menuAddProductsActionPerformed(e);
 			});
 			menuCreatePurchase.addActionListener(e->{
-				new CreatePurchase().setVisible(true);
+				new CreatePurchase(userType).setVisible(true);
 				dispose();
 			});
 			menuCreaterOrder.addActionListener(e->{
-				new CreateOrder().setVisible(true);
+				new CreateOrder(userType).setVisible(true);
 				dispose();
 			});
 		}
@@ -370,30 +398,30 @@ public class ViewStocks extends JFrame{
 		
 
 		public void menuViewSupplierActionPerformed(ActionEvent evt) {
-			new ViewSupplier().setVisible(true);
+			new ViewSupplier(userType).setVisible(true);
 			dispose();
 		}
 
 		public void menuAddCustomerActionPerformed(ActionEvent evt) {
 
-			new AddCustomer().setVisible(true);
+			new AddCustomer(userType).setVisible(true);
 			dispose();
 		}
 		public void menuAddSupplierActionPerformed(ActionEvent evt) {
 
-			new AddSupplier().setVisible(true);
+			new AddSupplier(userType).setVisible(true);
 			dispose();
 		}
 		private void menuViewCustomerActionPerformed(ActionEvent evt) {
 
 			
-			new ViewCustomer().setVisible(true);
+			new ViewCustomer(userType).setVisible(true);
 			this.dispose();
 		}
 		private void menuAddProductsActionPerformed(ActionEvent evt) {
 
 			
-			new AddProduct().setVisible(true);
+			new AddProduct(userType).setVisible(true);
 			this.dispose();
 		}
 		
@@ -627,7 +655,7 @@ public boolean ValidateFields() {
 			if (qs.statusCode == 1) {
 				fetchAllProducts();
 				clearUpdateDetails();
-				JOptionPane.showMessageDialog(null, "Supplier Details Updated SuccessFully", "Info",
+				JOptionPane.showMessageDialog(null, "Product Updated SuccessFully", "Info",
 						JOptionPane.INFORMATION_MESSAGE, null);
 			} else {
 				JOptionPane.showMessageDialog(null, qs.message, "Error", JOptionPane.ERROR_MESSAGE, null);
@@ -675,7 +703,7 @@ public boolean ValidateFields() {
 				fetchAllProducts();
 				productBeingEdited = null;
 				selectedProduct = null;
-				JOptionPane.showMessageDialog(null, "Supplier Deleted SuccessFully", "Info",
+				JOptionPane.showMessageDialog(null, "Product Deleted SuccessFully", "Info",
 						JOptionPane.INFORMATION_MESSAGE, null);
 			} else {
 				JOptionPane.showMessageDialog(null, qs.message, "Error", JOptionPane.ERROR_MESSAGE, null);
@@ -739,7 +767,7 @@ public boolean ValidateFields() {
 		private Product productBeingEdited;
 		private Product selectedProduct;
 		private String imagePath;
-
+		private static String userType;
 	
 
 }

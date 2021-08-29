@@ -33,6 +33,7 @@ import javax.swing.table.DefaultTableModel;
 
 import customer.AddCustomer;
 import customer.ViewCustomer;
+import model.Constants;
 import model.Supplier;
 import network.SQLService;
 import network.response.QueryResponse;
@@ -45,7 +46,8 @@ import view.ViewStocks;
 
 public class AddCustomer extends javax.swing.JFrame {
 
-	public AddCustomer() {
+	public AddCustomer(String loginType) {
+		userType=loginType;
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(false);
 		setLayout(null);
@@ -58,7 +60,7 @@ public class AddCustomer extends javax.swing.JFrame {
 	}
 
 	public static void main(String[] args) {
-		new AddCustomer().setVisible(true);
+		new AddCustomer(userType).setVisible(true);
 
 	}
 
@@ -173,17 +175,17 @@ public class AddCustomer extends javax.swing.JFrame {
 		menuProduct.setText("Product");
 		menuAddProduct.setText("Add Product");
 		menuProduct.add(menuAddProduct);
-		menuBar.add(menuProduct);
+//		menuBar.add(menuProduct);
 
 		menuSupplier.setForeground(new java.awt.Color(255, 255, 255));
 		menuSupplier.setText("Suppliers");
 
 		menuAddSupplier.setText("Add Supplier");
 
-		menuSupplier.add(menuAddSupplier);
+//		menuSupplier.add(menuAddSupplier);
 
 		menuViewSupplier.setText("View Supplier");
-		menuSupplier.add(menuViewSupplier);
+//		menuSupplier.add(menuViewSupplier);
 
 		menuBar.add(menuSupplier);
 
@@ -191,13 +193,13 @@ public class AddCustomer extends javax.swing.JFrame {
 		menuCustomers.setText("Customers");
 
 		menuAddCustomer.setText("Add Customer");
-		menuCustomers.add(menuAddCustomer);
+//		menuCustomers.add(menuAddCustomer);
 
 		menuViewCustomer.setText("View Customer");
 
-		menuCustomers.add(menuViewCustomer);
+//		menuCustomers.add(menuViewCustomer);
 
-		menuBar.add(menuCustomers);
+//		menuBar.add(menuCustomers);
 
 		menuTransactions.setForeground(new java.awt.Color(255, 255, 255));
 		menuTransactions.setText("New Purchase/Order");
@@ -208,7 +210,7 @@ public class AddCustomer extends javax.swing.JFrame {
 		menuCreaterOrder.setText("Create Order");
 		menuTransactions.add(menuCreaterOrder);
 
-		menuBar.add(menuTransactions);
+//		menuBar.add(menuTransactions);
 
 		menuView.setForeground(new java.awt.Color(255, 255, 255));
 		menuView.setText("View");
@@ -216,11 +218,12 @@ public class AddCustomer extends javax.swing.JFrame {
 		menuStocks.setText("Stocks");
 		menuView.add(menuStocks);
 
-		menuBar.add(menuView);
+//		menuBar.add(menuView);
 
 		setJMenuBar(menuBar);
 
 		setMenuListener();
+		setMenuItems();
 
 	}
 	
@@ -253,7 +256,31 @@ public class AddCustomer extends javax.swing.JFrame {
 		 
 		 
 		 
-		 
+	public void setMenuItems() {
+		if(userType==Constants.ADMIN) {
+			menuBar.add(menuProduct);
+			
+			menuSupplier.add(menuAddSupplier);
+			menuSupplier.add(menuViewSupplier);
+			
+			menuCustomers.add(menuAddCustomer);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else if(userType==Constants.WAREHOUSE) {
+			menuSupplier.add(menuViewSupplier);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else {
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}
+	}
 	
 
 	public void setMenuListener() {
@@ -274,11 +301,11 @@ public class AddCustomer extends javax.swing.JFrame {
 			menuViewStocksActionPerformed(e);
 		});
 		menuCreatePurchase.addActionListener(e->{
-			new CreatePurchase().setVisible(true);
+			new CreatePurchase(userType).setVisible(true);
 			dispose();
 		});
 		menuCreaterOrder.addActionListener(e->{
-			new CreateOrder().setVisible(true);
+			new CreateOrder(userType).setVisible(true);
 			dispose();
 		});
 	}
@@ -287,30 +314,30 @@ public class AddCustomer extends javax.swing.JFrame {
 	
 
 	public void menuViewSupplierActionPerformed(ActionEvent evt) {
-		new ViewSupplier().setVisible(true);
+		new ViewSupplier(userType).setVisible(true);
 		dispose();
 	}
 
 	public void menuAddProductActionPerformed(ActionEvent evt) {
 
-		new AddProduct().setVisible(true);
+		new AddProduct(userType).setVisible(true);
 		dispose();
 	}
 	public void menuAddSupplierActionPerformed(ActionEvent evt) {
 
-		new AddSupplier().setVisible(true);
+		new AddSupplier(userType).setVisible(true);
 		dispose();
 	}
 	private void menuViewCustomerActionPerformed(ActionEvent evt) {
 
 		
-		new ViewCustomer().setVisible(true);
+		new ViewCustomer(userType).setVisible(true);
 		this.dispose();
 	}
 	private void menuViewStocksActionPerformed(ActionEvent evt) {
 
 		
-		new ViewStocks().setVisible(true);
+		new ViewStocks(userType).setVisible(true);
 		this.dispose();
 	}
 	
@@ -413,6 +440,7 @@ private JMenuItem menuAddProduct;
 
 	// sql
 	private SQLService service;
+	private static String userType;
 
 	
 

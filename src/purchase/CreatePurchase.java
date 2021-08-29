@@ -50,6 +50,8 @@ import network.response.QueryResponse;
 import orders.CreateOrder;
 import supplier.AddSupplier;
 import supplier.ViewSupplier;
+import view.ViewStocks;
+import model.Constants;
 import model.MyTableModel;
 import model.Product;
 
@@ -129,8 +131,10 @@ public class CreatePurchase extends javax.swing.JFrame {
     ArrayList<String> itemPrice = new ArrayList<>();
     ArrayList<String> subtotal = new ArrayList<>();
     ArrayList<String> productIds=new ArrayList<>();
+    private static String userType;
     
-	public CreatePurchase(){
+	public CreatePurchase(String loginType){
+		userType=loginType;
 		service=new SQLService();
 		service.getConnection();
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -416,31 +420,31 @@ public class CreatePurchase extends javax.swing.JFrame {
 
 		menuProduct.setForeground(new java.awt.Color(255, 255, 255));
 		menuProduct.setText("Product");
-		menuBar.add(menuProduct);
+//		menuBar.add(menuProduct);
 
 		menuSupplier.setForeground(new java.awt.Color(255, 255, 255));
 		menuSupplier.setText("Suppliers");
 
 		menuAddSupplier.setText("Add Supplier");
 
-		menuSupplier.add(menuAddSupplier);
+//		menuSupplier.add(menuAddSupplier);
 
 		menuViewSupplier.setText("View Supplier");
-		menuSupplier.add(menuViewSupplier);
+//		menuSupplier.add(menuViewSupplier);
 
-		menuBar.add(menuSupplier);
+//		menuBar.add(menuSupplier);
 
 		menuCustomers.setForeground(new java.awt.Color(255, 255, 255));
 		menuCustomers.setText("Customers");
 
 		menuAddCustomer.setText("Add Customer");
-		menuCustomers.add(menuAddCustomer);
+//		menuCustomers.add(menuAddCustomer);
 
 		menuViewCustomer.setText("View Customer");
 
-		menuCustomers.add(menuViewCustomer);
+//		menuCustomers.add(menuViewCustomer);
 
-		menuBar.add(menuCustomers);
+//		menuBar.add(menuCustomers);
 
 		menuTransactions.setForeground(new java.awt.Color(255, 255, 255));
 		menuTransactions.setText("New Purchase/Order");
@@ -451,7 +455,7 @@ public class CreatePurchase extends javax.swing.JFrame {
 		menuCreaterOrder.setText("Create Order");
 		menuTransactions.add(menuCreaterOrder);
 
-		menuBar.add(menuTransactions);
+//		menuBar.add(menuTransactions);
 
 		menuView.setForeground(new java.awt.Color(255, 255, 255));
 		menuView.setText("View");
@@ -459,14 +463,40 @@ public class CreatePurchase extends javax.swing.JFrame {
 		menuStocks.setText("Stocks");
 		menuView.add(menuStocks);
 
-		menuBar.add(menuView);
+//		menuBar.add(menuView);
 
 		setJMenuBar(menuBar);
 
 		setMenuListener();
+		setMenuItems();
 
 	}
 	
+	public void setMenuItems() {
+		if(userType==Constants.ADMIN) {
+			menuBar.add(menuProduct);
+			
+			menuSupplier.add(menuAddSupplier);
+			menuSupplier.add(menuViewSupplier);
+			
+			menuCustomers.add(menuAddCustomer);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else if(userType==Constants.WAREHOUSE) {
+			menuSupplier.add(menuViewSupplier);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else {
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}
+	}
 	public void setMenuListener() {
 		menuAddSupplier.addActionListener(e -> {
 			menuAddSupplierActionPerformed(e);
@@ -479,13 +509,17 @@ public class CreatePurchase extends javax.swing.JFrame {
 			menuViewCustomerActionPerformed(e);
 		});
 		menuViewSupplier.addActionListener(e -> {
-			new ViewSupplier().setVisible(true);
+			new ViewSupplier(userType).setVisible(true);
 			dispose();
 		});
 		
+		menuStocks.addActionListener(e->{
+			new ViewStocks(userType).setVisible(true);
+			dispose();
+		});
 		
 		menuCreaterOrder.addActionListener(e->{
-			new CreateOrder().setVisible(true);
+			new CreateOrder(userType).setVisible(true);
 			dispose();
 		});
 	}
@@ -859,29 +893,29 @@ public class CreatePurchase extends javax.swing.JFrame {
 	}
 	
 	public void menuAddSupplierActionPerformed(ActionEvent evt) {
-		new AddSupplier().setVisible(true);
+		new AddSupplier(userType).setVisible(true);
 		dispose();
 	}
 
 	public void menuAddCustomerActionPerformed(ActionEvent evt) {
 
-		new AddCustomer().setVisible(true);
+		new AddCustomer(userType).setVisible(true);
 		dispose();
 	}
 
 	private void menuViewCustomerActionPerformed(ActionEvent evt) {
 
 		this.dispose();
-		new ViewCustomer().setVisible(true);
+		new ViewCustomer(userType).setVisible(true);
 	}
 	
 	private void menuCreatePurchaseActionPerformed(ActionEvent evt) {
 		this.dispose();
-		new CreatePurchase().setVisible(true);
+		new CreatePurchase(userType).setVisible(true);
 	}
 	
 	public static void main(String[] args) {
-		new CreatePurchase().setVisible(true);
+		new CreatePurchase(userType).setVisible(true);
 		
 	}
 

@@ -41,12 +41,14 @@ import purchase.CreatePurchase;
 import supplier.AddSupplier;
 import supplier.ViewSupplier;
 import view.ViewStocks;
+import model.Constants;
 import model.MyTableModel;
 
 
 public class ViewCustomer extends javax.swing.JFrame {
 
-	public ViewCustomer() {
+	public ViewCustomer(String loginType) {
+		userType=loginType;
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(false);
 		setLayout(null);
@@ -60,7 +62,7 @@ public class ViewCustomer extends javax.swing.JFrame {
 	}
 
 	public static void main(String[] args) {
-		new ViewCustomer().setVisible(true);
+		new ViewCustomer(userType).setVisible(true);
 
 	}
 
@@ -229,31 +231,31 @@ public class ViewCustomer extends javax.swing.JFrame {
 		menuProduct.setText("Product");
 		menuAddProduct.setText("Add Product");
 		menuProduct.add(menuAddProduct);
-		menuBar.add(menuProduct);
+//		menuBar.add(menuProduct);
 
 		menuSupplier.setForeground(new java.awt.Color(255, 255, 255));
 		menuSupplier.setText("Suppliers");
 
 		menuAddSupplier.setText("Add Supplier");
 
-		menuSupplier.add(menuAddSupplier);
+//		menuSupplier.add(menuAddSupplier);
 
 		menuViewSupplier.setText("View Supplier");
-		menuSupplier.add(menuViewSupplier);
+//		menuSupplier.add(menuViewSupplier);
 
-		menuBar.add(menuSupplier);
+//		menuBar.add(menuSupplier);
 
 		menuCustomers.setForeground(new java.awt.Color(255, 255, 255));
 		menuCustomers.setText("Customers");
 
 		menuAddCustomer.setText("Add Customer");
-		menuCustomers.add(menuAddCustomer);
+//		menuCustomers.add(menuAddCustomer);
 
 		menuViewCustomer.setText("View Customer");
 
-		menuCustomers.add(menuViewCustomer);
+//		menuCustomers.add(menuViewCustomer);
 
-		menuBar.add(menuCustomers);
+//		menuBar.add(menuCustomers);
 
 		menuTransactions.setForeground(new java.awt.Color(255, 255, 255));
 		menuTransactions.setText("New Purchase/Order");
@@ -264,7 +266,7 @@ public class ViewCustomer extends javax.swing.JFrame {
 		menuCreaterOrder.setText("Create Order");
 		menuTransactions.add(menuCreaterOrder);
 
-		menuBar.add(menuTransactions);
+//		menuBar.add(menuTransactions);
 
 		menuView.setForeground(new java.awt.Color(255, 255, 255));
 		menuView.setText("View");
@@ -272,12 +274,13 @@ public class ViewCustomer extends javax.swing.JFrame {
 		menuStocks.setText("Stocks");
 		menuView.add(menuStocks);
 
-		menuBar.add(menuView);
+//		menuBar.add(menuView);
 
 		setJMenuBar(menuBar);
 
 		setMenuListener();
 
+		setMenuItems();
 	}
 	
 	public void setButtonLister() {
@@ -314,6 +317,31 @@ public class ViewCustomer extends javax.swing.JFrame {
 		 });
 	}
 
+	public void setMenuItems() {
+		if(userType==Constants.ADMIN) {
+			menuBar.add(menuProduct);
+			
+			menuSupplier.add(menuAddSupplier);
+			menuSupplier.add(menuViewSupplier);
+			
+			menuCustomers.add(menuAddCustomer);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else if(userType==Constants.WAREHOUSE) {
+			menuSupplier.add(menuViewSupplier);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else {
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}
+	}
 	public void setMenuListener() {
 		menuViewSupplier.addActionListener(e -> {
 			menuViewSupplierActionPerformed(e);
@@ -332,11 +360,11 @@ public class ViewCustomer extends javax.swing.JFrame {
 			menuViewStocksActionPerformed(e);
 		});
 		menuCreatePurchase.addActionListener(e->{
-			new CreatePurchase().setVisible(true);
+			new CreatePurchase(userType).setVisible(true);
 			dispose();
 		});
 		menuCreaterOrder.addActionListener(e->{
-			new CreateOrder().setVisible(true);
+			new CreateOrder(userType).setVisible(true);
 			dispose();
 		});
 	}
@@ -345,30 +373,30 @@ public class ViewCustomer extends javax.swing.JFrame {
 	
 
 	public void menuViewSupplierActionPerformed(ActionEvent evt) {
-		new ViewSupplier().setVisible(true);
+		new ViewSupplier(userType).setVisible(true);
 		dispose();
 	}
 
 	public void menuAddCustomerActionPerformed(ActionEvent evt) {
 
-		new AddCustomer().setVisible(true);
+		new AddCustomer(userType).setVisible(true);
 		dispose();
 	}
 	public void menuAddSupplierActionPerformed(ActionEvent evt) {
 
-		new AddSupplier().setVisible(true);
+		new AddSupplier(userType).setVisible(true);
 		dispose();
 	}
 	private void menuAddProductActionPerformed(ActionEvent evt) {
 
 		
-		new AddProduct().setVisible(true);
+		new AddProduct(userType).setVisible(true);
 		this.dispose();
 	}
 	private void menuViewStocksActionPerformed(ActionEvent evt) {
 
 		
-		new ViewStocks().setVisible(true);
+		new ViewStocks(userType).setVisible(true);
 		this.dispose();
 	}
 	
@@ -669,5 +697,6 @@ public class ViewCustomer extends javax.swing.JFrame {
 
 	private Supplier selectedCustomer = null;
 	private Supplier customerBeingEdited = null;
+	private static String userType;
 
 }

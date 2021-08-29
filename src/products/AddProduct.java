@@ -25,6 +25,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -38,6 +39,7 @@ import javax.swing.table.DefaultTableModel;
 
 import customer.AddCustomer;
 import customer.ViewCustomer;
+import model.Constants;
 import model.Supplier;
 import network.SQLService;
 import network.response.QueryResponse;
@@ -49,7 +51,8 @@ import view.ViewStocks;
 
 public class AddProduct extends javax.swing.JFrame {
 
-	public AddProduct() {
+	public AddProduct(String loginType) {
+		userType=loginType;
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setUndecorated(false);
 		setLayout(null);
@@ -63,7 +66,7 @@ public class AddProduct extends javax.swing.JFrame {
 	}
 
 	public static void main(String[] args) {
-		new AddProduct().setVisible(true);
+		new AddProduct(userType).setVisible(true);
 
 	}
 
@@ -167,6 +170,7 @@ public class AddProduct extends javax.swing.JFrame {
 		menuBar = new javax.swing.JMenuBar();
 		menuProduct = new javax.swing.JMenu();
 		menuSupplier = new javax.swing.JMenu();
+		menuAddManager = new javax.swing.JMenu();
 		menuAddSupplier = new javax.swing.JMenuItem();
 		menuViewSupplier = new javax.swing.JMenuItem();
 		menuCustomers = new javax.swing.JMenu();
@@ -175,6 +179,8 @@ public class AddProduct extends javax.swing.JFrame {
 		menuTransactions = new javax.swing.JMenu();
 		menuCreatePurchase = new javax.swing.JMenuItem();
 		menuCreaterOrder = new javax.swing.JMenuItem();
+		menuAddWareHouseManager = new javax.swing.JMenuItem();
+		menuAddSalesManager = new javax.swing.JMenuItem();
 		menuView = new javax.swing.JMenu();
 		menuStocks = new javax.swing.JMenuItem();
 
@@ -188,31 +194,34 @@ public class AddProduct extends javax.swing.JFrame {
 
 		menuProduct.setForeground(new java.awt.Color(255, 255, 255));
 		menuProduct.setText("Product");
-		menuBar.add(menuProduct);
+//		menuBar.add(menuProduct);
 
 		menuSupplier.setForeground(new java.awt.Color(255, 255, 255));
 		menuSupplier.setText("Suppliers");
 
 		menuAddSupplier.setText("Add Supplier");
 
-		menuSupplier.add(menuAddSupplier);
+//		menuSupplier.add(menuAddSupplier);
 
 		menuViewSupplier.setText("View Supplier");
-		menuSupplier.add(menuViewSupplier);
+//		menuSupplier.add(menuViewSupplier);
 
-		menuBar.add(menuSupplier);
+//		menuBar.add(menuSupplier);
 
 		menuCustomers.setForeground(new java.awt.Color(255, 255, 255));
 		menuCustomers.setText("Customers");
+		
+		menuAddManager.setForeground(new java.awt.Color(255, 255, 255));
+		menuAddManager.setText("Customers");
 
 		menuAddCustomer.setText("Add Customer");
-		menuCustomers.add(menuAddCustomer);
+//		menuCustomers.add(menuAddCustomer);
 
 		menuViewCustomer.setText("View Customer");
 
-		menuCustomers.add(menuViewCustomer);
+//		menuCustomers.add(menuViewCustomer);
 
-		menuBar.add(menuCustomers);
+//		menuBar.add(menuCustomers);
 
 		menuTransactions.setForeground(new java.awt.Color(255, 255, 255));
 		menuTransactions.setText("New Purchase/Order");
@@ -223,7 +232,7 @@ public class AddProduct extends javax.swing.JFrame {
 		menuCreaterOrder.setText("Create Order");
 		menuTransactions.add(menuCreaterOrder);
 
-		menuBar.add(menuTransactions);
+//		menuBar.add(menuTransactions);
 
 		menuView.setForeground(new java.awt.Color(255, 255, 255));
 		menuView.setText("View");
@@ -231,18 +240,44 @@ public class AddProduct extends javax.swing.JFrame {
 		menuStocks.setText("Stocks");
 		menuView.add(menuStocks);
 
-		menuBar.add(menuView);
+//		menuBar.add(menuView);
+		
 
 		setJMenuBar(menuBar);
 
 		setMenuListener();
+		setMenuItems();
 
 	}
-	
+	public void setMenuItems() {
+		if(userType==Constants.ADMIN) {
+			menuBar.add(menuProduct);
+			
+			menuSupplier.add(menuAddSupplier);
+			menuSupplier.add(menuViewSupplier);
+			
+			menuCustomers.add(menuAddCustomer);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else if(userType==Constants.WAREHOUSE) {
+			menuSupplier.add(menuViewSupplier);
+			menuCustomers.add(menuViewCustomer);
+			menuBar.add(menuSupplier);
+			menuBar.add(menuCustomers);
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}else {
+			menuBar.add(menuTransactions);
+			menuBar.add(menuView);
+		}
+	}
 	public void setButtonLister() {
 		btnUpload.addActionListener(e->{
 			                                        
-			        // TODO add your handling code here:
+			       
 			       chooseImage();                              
 			    
 		});
@@ -334,11 +369,11 @@ public class AddProduct extends javax.swing.JFrame {
 			menuViewStocksActionPerformed(e);
 		});
 		menuCreatePurchase.addActionListener(e->{
-			new CreatePurchase().setVisible(true);
+			new CreatePurchase(userType).setVisible(true);
 			dispose();
 		});
 		menuCreaterOrder.addActionListener(e->{
-			new CreateOrder().setVisible(true);
+			new CreateOrder(userType).setVisible(true);
 			dispose();
 		});
 	}
@@ -347,30 +382,30 @@ public class AddProduct extends javax.swing.JFrame {
 	
 
 	public void menuViewSupplierActionPerformed(ActionEvent evt) {
-		new ViewSupplier().setVisible(true);
+		new ViewSupplier(userType).setVisible(true);
 		dispose();
 	}
 
 	public void menuAddCustomerActionPerformed(ActionEvent evt) {
 
-		new AddCustomer().setVisible(true);
+		new AddCustomer(userType).setVisible(true);
 		dispose();
 	}
 	public void menuAddSupplierActionPerformed(ActionEvent evt) {
 
-		new AddSupplier().setVisible(true);
+		new AddSupplier(userType).setVisible(true);
 		dispose();
 	}
 	private void menuViewCustomerActionPerformed(ActionEvent evt) {
 
 		
-		new ViewCustomer().setVisible(true);
+		new ViewCustomer(userType).setVisible(true);
 		this.dispose();
 	}
 	private void menuViewStocksActionPerformed(ActionEvent evt) {
 
 		
-		new ViewStocks().setVisible(true);
+		new ViewStocks(userType).setVisible(true);
 		this.dispose();
 	}
 	
@@ -416,6 +451,7 @@ public class AddProduct extends javax.swing.JFrame {
 	private javax.swing.JMenu menuTransactions;
 	private javax.swing.JMenu menuView;
 	private javax.swing.JMenu menuProduct;
+	private javax.swing.JMenu menuAddManager;
 	private javax.swing.JMenuBar menuBar;
 	private javax.swing.JMenuItem menuStocks;
 	private javax.swing.JScrollPane jScrollPane1;
@@ -425,6 +461,8 @@ public class AddProduct extends javax.swing.JFrame {
 	private javax.swing.JMenuItem menuCreaterOrder;
 	private javax.swing.JMenuItem menuViewCustomer;
 	private javax.swing.JMenuItem menuViewSupplier;
+	private JMenuItem menuAddWareHouseManager;
+	private JMenuItem menuAddSalesManager;
 
 	// Panels
 
@@ -458,6 +496,6 @@ public class AddProduct extends javax.swing.JFrame {
 	// sql
 	private SQLService service;
 	private String imagePath;
-
+	private static String userType;
 
 }
